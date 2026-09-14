@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dependency-rescue"
+version = "0.1.0"
+description = "Evidence-driven dependency upgrade repair with LangGraph"
+requires-python = ">=3.12"
+dependencies = ["langgraph==1.2.11", "langgraph-checkpoint-sqlite==3.1.1", "fastapi==0.141.1", "uvicorn==0.52.4", "httpx==0.28.1"]
+
+[project.optional-dependencies]
+test = ["pytest>=8,<10"]
+
+[tool.setuptools.packages.find]
+include = ["rescue*"]
+
+[tool.setuptools.package-data]
+rescue = ["static/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

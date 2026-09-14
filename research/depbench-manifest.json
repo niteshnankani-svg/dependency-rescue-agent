@@ -1,0 +1,86 @@
+{
+  "repo": "Depbench/build_from_source",
+  "revision": "3eef955c222baa310ef039153755ec9d7cdb03f3",
+  "tasks": 201,
+  "selected": [
+    {
+      "folder": "Azure-Samples__chat-with-your-data-solution-accelerator__894",
+      "ecosystem": "pip",
+      "library": "semantic-kernel",
+      "old_version": "0.9.7b1",
+      "new_version": "0.9.8b1"
+    },
+    {
+      "folder": "apache__iceberg-python__159",
+      "ecosystem": "pip",
+      "library": "pydantic",
+      "old_version": "2.4.2",
+      "new_version": "2.5.2"
+    },
+    {
+      "folder": "chris48s__v8r__22",
+      "ecosystem": "npm_and_yarn",
+      "library": "js-yaml",
+      "old_version": "3.14.0",
+      "new_version": "4.0.0"
+    },
+    {
+      "folder": "eakmanrq__sqlframe__200",
+      "ecosystem": "pip",
+      "library": "sqlglot",
+      "old_version": ">=24.0.0,<25.29",
+      "new_version": ">=24.0.0,<25.32"
+    },
+    {
+      "folder": "eakmanrq__sqlframe__466",
+      "ecosystem": "pip",
+      "library": "sqlglot",
+      "old_version": ">=24.0.0,<27.7",
+      "new_version": ">=24.0.0,<27.8"
+    },
+    {
+      "folder": "eakmanrq__sqlframe__492",
+      "ecosystem": "pip",
+      "library": "sqlglot",
+      "old_version": ">=24.0.0,<27.11",
+      "new_version": ">=24.0.0,<27.12"
+    },
+    {
+      "folder": "eakmanrq__sqlframe__581",
+      "ecosystem": "pip",
+      "library": "sqlglot",
+      "old_version": ">=28.0.0,<28.7",
+      "new_version": ">=28.0.0,<28.8"
+    },
+    {
+      "folder": "eakmanrq__sqlframe__589",
+      "ecosystem": "pip",
+      "library": "sqlglot",
+      "old_version": ">=28.0.0,<28.10",
+      "new_version": ">=28.0.0,<29.1"
+    },
+    {
+      "folder": "iterative__dvc__7899",
+      "ecosystem": "pip",
+      "library": "networkx",
+      "old_version": "2.5,<2.8.3",
+      "new_version": ">=2.5"
+    },
+    {
+      "folder": "python-telegram-bot__python-telegram-bot__4024",
+      "ecosystem": "pip",
+      "library": "httpx",
+      "old_version": "0.25.2",
+      "new_version": "0.26.0"
+    },
+    {
+      "folder": "strawberry-graphql__strawberry__282",
+      "ecosystem": "pip",
+      "library": "graphql-core",
+      "old_version": "3.1.0b0",
+      "new_version": "3.1.0b2"
+    }
+  ],
+  "protocol": "No reference solutions downloaded. Verifier files are evaluator-only; the development model receives failure summaries, not verifier source.",
+  "license": "Per upstream repository; see downloaded task_repository_metadata.csv"
+}

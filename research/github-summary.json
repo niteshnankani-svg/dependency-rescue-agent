@@ -1,0 +1,226 @@
+[
+  {
+    "name": "adani-stock-predictor",
+    "file_count": 7,
+    "tree_truncated": false,
+    "build_files": [
+      "requirements.txt"
+    ]
+  },
+  {
+    "name": "agent-company",
+    "file_count": 86,
+    "tree_truncated": false,
+    "build_files": [
+      "Dockerfile",
+      "frontend/package.json",
+      "requirements.txt"
+    ]
+  },
+  {
+    "name": "ai-complaint-intelligence-agent",
+    "file_count": 9,
+    "tree_truncated": false,
+    "build_files": [
+      "requirements.txt"
+    ]
+  },
+  {
+    "name": "ai-pricing-api",
+    "file_count": 6,
+    "tree_truncated": false,
+    "build_files": [
+      "requirements.txt"
+    ]
+  },
+  {
+    "name": "amazon-revenue-predictor",
+    "file_count": 4,
+    "tree_truncated": false,
+    "build_files": [
+      "requirements.txt"
+    ]
+  },
+  {
+    "name": "bargainai",
+    "file_count": 11,
+    "tree_truncated": false,
+    "build_files": [
+      "shopify/requirements.txt",
+      "webhook/requirements.txt"
+    ]
+  },
+  {
+    "name": "bargainai-shopify",
+    "file_count": 3,
+    "tree_truncated": false,
+    "build_files": [
+      "requirements.txt"
+    ]
+  },
+  {
+    "name": "bargainai-whatsapp",
+    "file_count": 12,
+    "tree_truncated": false,
+    "build_files": [
+      "requirements.txt"
+    ]
+  },
+  {
+    "name": "bargainai_webhook_clean",
+    "file_count": 4,
+    "tree_truncated": false,
+    "build_files": [
+      "requirements.txt"
+    ]
+  },
+  {
+    "name": "bargaining_agent",
+    "file_count": 0,
+    "tree_truncated": null,
+    "build_files": []
+  },
+  {
+    "name": "bert-sentiment-analysis",
+    "file_count": 0,
+    "tree_truncated": null,
+    "build_files": []
+  },
+  {
+    "name": "claude-contract-agent",
+    "file_count": 20,
+    "tree_truncated": false,
+    "build_files": [
+      "pyproject.toml",
+      "requirements.txt"
+    ]
+  },
+  {
+    "name": "credit-risk-app",
+    "file_count": 6,
+    "tree_truncated": false,
+    "build_files": [
+      "requirements.txt"
+    ]
+  },
+  {
+    "name": "credit_risk-",
+    "file_count": 7,
+    "tree_truncated": false,
+    "build_files": [
+      "Dockerfile",
+      "requirements.txt"
+    ]
+  },
+  {
+    "name": "customer-churn-ml",
+    "file_count": 10,
+    "tree_truncated": false,
+    "build_files": [
+      "requirements.txt"
+    ]
+  },
+  {
+    "name": "daily-learning-log",
+    "file_count": 3,
+    "tree_truncated": false,
+    "build_files": []
+  },
+  {
+    "name": "house-price-ml-project",
+    "file_count": 13,
+    "tree_truncated": false,
+    "build_files": [
+      "requirements.txt"
+    ]
+  },
+  {
+    "name": "Job_application_bot",
+    "file_count": 7,
+    "tree_truncated": false,
+    "build_files": [
+      "requirements.txt"
+    ]
+  },
+  {
+    "name": "legal-rag-chatbot",
+    "file_count": 34,
+    "tree_truncated": false,
+    "build_files": [
+      "requirements.txt"
+    ]
+  },
+  {
+    "name": "multi-agent-ticketing-system",
+    "file_count": 0,
+    "tree_truncated": null,
+    "build_files": []
+  },
+  {
+    "name": "multimodal-customer-support-agent",
+    "file_count": 12,
+    "tree_truncated": false,
+    "build_files": [
+      "Dockerfile",
+      "requirements.txt"
+    ]
+  },
+  {
+    "name": "Multi_agent_ticketing_system",
+    "file_count": 61,
+    "tree_truncated": false,
+    "build_files": [
+      "requirements.txt"
+    ]
+  },
+  {
+    "name": "niryat-ai",
+    "file_count": 104,
+    "tree_truncated": false,
+    "build_files": [
+      "backend/requirements.txt",
+      "frontend/package.json"
+    ]
+  },
+  {
+    "name": "niteshnankani-svg",
+    "file_count": 1,
+    "tree_truncated": false,
+    "build_files": []
+  },
+  {
+    "name": "pact-contract-agent",
+    "file_count": 47,
+    "tree_truncated": false,
+    "build_files": [
+      "Dockerfile",
+      "pyproject.toml"
+    ]
+  },
+  {
+    "name": "Portfolio-website",
+    "file_count": 55,
+    "tree_truncated": false,
+    "build_files": [
+      "package.json"
+    ]
+  },
+  {
+    "name": "recallai",
+    "file_count": 98,
+    "tree_truncated": false,
+    "build_files": [
+      "Dockerfile",
+      "frontend/package.json",
+      "requirements.txt"
+    ]
+  },
+  {
+    "name": "spam-classification-deep-learning-",
+    "file_count": 7,
+    "tree_truncated": false,
+    "build_files": [
+      "requirements.txt"
+    ]
+  }
+]

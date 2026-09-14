@@ -1,0 +1,148 @@
+{
+  "run_id": "ccb4d4db10554180bdc80f5832253182",
+  "status": "awaiting_approval",
+  "baseline": {
+    "exit_code": 0,
+    "timed_out": false,
+    "seconds": 0.79,
+    "tests": 20,
+    "passes": 20,
+    "failures": [],
+    "ok": true,
+    "isolation": "macOS Seatbelt; offline; source read-only",
+    "node": "<project>/data/external/node-v18.20.8-darwin-arm64/bin/node"
+  },
+  "broken": {
+    "exit_code": 3,
+    "timed_out": false,
+    "seconds": 0.66,
+    "tests": 20,
+    "passes": 17,
+    "failures": [
+      {
+        "title": "CLI success behaviour should validate yaml files",
+        "message": "expected 0 to equal 1",
+        "stack": "AssertionError: expected 0 to equal 1\n    at <project>/runtime/ccb4d4db10554180bdc80f5832253182/workspace/src/cli.spec.js:129:16"
+      },
+      {
+        "title": "CLI error handling should return 1 if invalid response fetching auto-detected schema",
+        "message": "expected 1 to equal 0",
+        "stack": "AssertionError: expected 1 to equal 0\n    at <project>/runtime/ccb4d4db10554180bdc80f5832253182/workspace/src/cli.spec.js:171:16\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)"
+      },
+      {
+        "title": "CLI error handling should return 1 if invalid response fetching user-supplied schema",
+        "message": "Mocks not yet satisfied:\nGET https://example.com:443/schema.json",
+        "stack": "AssertionError [ERR_ASSERTION]: Mocks not yet satisfied:\nGET https://example.com:443/schema.json\n    at Scope.done (node_modules/nock/lib/scope.js:166:12)\n    at <project>/runtime/ccb4d4db10554180bdc80f5832253182/workspace/src/cli.spec.js:250:14\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)"
+      }
+    ],
+    "ok": false,
+    "isolation": "macOS Seatbelt; offline; source read-only",
+    "node": "<project>/data/external/node-v18.20.8-darwin-arm64/bin/node"
+  },
+  "verification": {
+    "exit_code": 0,
+    "timed_out": false,
+    "seconds": 0.91,
+    "tests": 20,
+    "passes": 20,
+    "failures": [],
+    "ok": true,
+    "isolation": "macOS Seatbelt; offline; source read-only",
+    "node": "<project>/data/external/node-v18.20.8-darwin-arm64/bin/node",
+    "integrity_ok": true,
+    "dependency_version": "4.0.0"
+  },
+  "model_usage": {
+    "model": "qwen3:4b",
+    "input_tokens": 3529,
+    "output_tokens": 160,
+    "duration_seconds": 28.04,
+    "chunks": [
+      {
+        "path": "src/cli.js",
+        "line": 61,
+        "score": 62
+      },
+      {
+        "path": "src/cli.js",
+        "line": 1,
+        "score": 59
+      },
+      {
+        "path": "src/cli.js",
+        "line": 121,
+        "score": 38
+      },
+      {
+        "path": "src/cache.js",
+        "line": 1,
+        "score": 17
+      },
+      {
+        "path": "src/index.js",
+        "line": 1,
+        "score": 3
+      },
+      {
+        "path": "src/cache.js",
+        "line": 61,
+        "score": 1
+      }
+    ]
+  },
+  "attempts": 1,
+  "events": [
+    {
+      "node": "intake",
+      "detail": "Pinned MIT-licensed development case; isolated workspace created"
+    },
+    {
+      "node": "baseline",
+      "detail": "20/20 baseline tests passed"
+    },
+    {
+      "node": "upgrade",
+      "detail": "Applied pinned manifest and installed js-yaml 4.0.0"
+    },
+    {
+      "node": "reproduce",
+      "detail": "3 failures; regression reproduced=True"
+    },
+    {
+      "node": "diagnose",
+      "detail": "Model proposed a structured source repair"
+    },
+    {
+      "node": "apply",
+      "detail": "Validated exact-match source edits: src/cli.js"
+    },
+    {
+      "node": "verify",
+      "detail": "20/20 tests passed; integrity=True"
+    },
+    {
+      "node": "evidence",
+      "detail": "Diff, target version, test counts and integrity bound to an approval digest"
+    }
+  ],
+  "date": "2026-09-14",
+  "case": "chris48s__v8r__22",
+  "dataset_revision": "3eef955c222baa310ef039153755ec9d7cdb03f3",
+  "evaluation": "Development case; canonical verifier tests used for feedback; adapted macOS harness, not official or held-out benchmark score",
+  "reference_solution_accessed": false,
+  "earlier_development_runs": [
+    "8ec5b0fe0eec4cd48077cc6722583997: rejected duplicate edit",
+    "3480dc55ef5840a58b548446884a25cc: rejected nonexistent anchors, escalated"
+  ],
+  "production_qualified": false,
+  "application_tests": {
+    "passed": 18,
+    "failed": 0
+  },
+  "browser_api_repeat": {
+    "run_id": "ff47ab8f240b4fd78f4e1490f1227627",
+    "status": "awaiting_approval",
+    "verified_tests": 20,
+    "passed": 20
+  }
+}
