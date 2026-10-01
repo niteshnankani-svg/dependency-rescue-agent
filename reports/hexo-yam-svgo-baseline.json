@@ -1,12 +1,15 @@
 {
   "exit_code": 0,
   "timed_out": false,
-  "seconds": 8.59,
+  "seconds": 6.78,
   "tests": 92,
   "passes": 92,
   "failures": [],
   "ok": true,
   "infrastructure_error": false,
   "isolation": "Docker: no network, read-only source, non-root, no capabilities, CPU/memory/PID limits",
-  "image": "node:18-bullseye@sha256:0d9e9a8dcd5a83ea737ed92227a6591a31ad70c8bb722b0c51aff7ae23a88b6a"
+  "image": "node:18-bullseye@sha256:0d9e9a8dcd5a83ea737ed92227a6591a31ad70c8bb722b0c51aff7ae23a88b6a",
+  "additional_checks": [],
+  "run_id": "104c0b964a0d4de48f7fd0264f4f1bad",
+  "scope": "Final development fixture; canonical test migrations declared in cases.json"
 }

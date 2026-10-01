@@ -1,0 +1,268 @@
+{
+  "exit_code": 1,
+  "timed_out": false,
+  "seconds": 3.57,
+  "tests": 51,
+  "passes": 0,
+  "failures": [
+    {
+      "title": "test/cache.spec.js if there is already a key in cache, it should not make a http request LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/cache.spec.js:14:21)"
+    },
+    {
+      "title": "test/cache.spec.js if initialized without any cache settings it should use default values LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/cache.spec.js:34:21)"
+    },
+    {
+      "title": "test/fast-jwt-integration.spec.js fast-jwt integration tests LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/fast-jwt-integration.spec.js:23:19)"
+    },
+    {
+      "title": "test/fastify-jwt-integrations.spec.js @fastify/jwt integration tests LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/fastify-jwt-integrations.spec.js:24:19)"
+    },
+    {
+      "title": "test/fastify-jwt-integrations.spec.js @fastify/jwt integration tests with providerDiscovery LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/fastify-jwt-integrations.spec.js:67:19)"
+    },
+    {
+      "title": "test/getJwk.spec.js rejects if the request fails LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwk.spec.js:23:19)"
+    },
+    {
+      "title": "test/getJwk.spec.js rejects if alg and kid do not match LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwk.spec.js:37:19)"
+    },
+    {
+      "title": "test/getJwk.spec.js returns a jwk if alg and kid match LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwk.spec.js:47:19)"
+    },
+    {
+      "title": "test/getJwk.spec.js returns a jwk if alg and kid match and path is specified LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwk.spec.js:58:19)"
+    },
+    {
+      "title": "test/getJwk.spec.js returns a jwk if no alg is provided and kid match LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwk.spec.js:73:19)"
+    },
+    {
+      "title": "test/getJwk.spec.js returns a jwk if no alg is provided and kid match but jwk has alg LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwk.spec.js:86:21)"
+    },
+    {
+      "title": "test/getJwk.spec.js caches a successful response LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwk.spec.js:99:19)"
+    },
+    {
+      "title": "test/getJwk.spec.js does not cache a failed response LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwk.spec.js:115:19)"
+    },
+    {
+      "title": "test/getJwk.spec.js rejects if response is an empty object LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwk.spec.js:123:19)"
+    },
+    {
+      "title": "test/getJwk.spec.js rejects if no JWKS are found in the response LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwk.spec.js:134:19)"
+    },
+    {
+      "title": "test/getJwk.spec.js supports domain without trailing slash LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwk.spec.js:145:19)"
+    },
+    {
+      "title": "test/getJwk.spec.js supports path without leading slash LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwk.spec.js:154:19)"
+    },
+    {
+      "title": "test/getJwk.spec.js does not execute concurrent requests LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwk.spec.js:164:19)"
+    },
+    {
+      "title": "test/getJwk.spec.js returns a stale cached value if request fails LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwk.spec.js:179:19)"
+    },
+    {
+      "title": "test/getJwk.spec.js allowed domains allows any domain by default LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwk.spec.js:213:21)"
+    },
+    {
+      "title": "test/getJwk.spec.js allowed domains allows domain https://example.com requested with https://example.com LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwk.spec.js:237:25)"
+    },
+    {
+      "title": "test/getJwk.spec.js allowed domains allows domain https://example.com/ requested with https://example.com/ LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwk.spec.js:237:25)"
+    },
+    {
+      "title": "test/getJwk.spec.js allowed domains allows domain https://example.com requested with https://example.com/ LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwk.spec.js:237:25)"
+    },
+    {
+      "title": "test/getJwk.spec.js allowed domains allows domain https://example.com/ requested with https://example.com LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwk.spec.js:237:25)"
+    },
+    {
+      "title": "test/getJwk.spec.js allowed domains allows multiple domains LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwk.spec.js:255:21)"
+    },
+    {
+      "title": "test/getJwk.spec.js allowed domains forbids domain outside of the allow list LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwk.spec.js:264:21)"
+    },
+    {
+      "title": "test/getJwkDiscovery.spec.js rejects if the discovery request fails LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwkDiscovery.spec.js:25:19)"
+    },
+    {
+      "title": "test/getJwkDiscovery.spec.js rejects if the request fails LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwkDiscovery.spec.js:40:19)"
+    },
+    {
+      "title": "test/getJwkDiscovery.spec.js returns a jwk if alg and kid match for discovery LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwkDiscovery.spec.js:55:19)"
+    },
+    {
+      "title": "test/getJwkDiscovery.spec.js returns a jwk if no alg is provided and kid match for discovery LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwkDiscovery.spec.js:69:21)"
+    },
+    {
+      "title": "test/getJwkDiscovery.spec.js returns a jwk if no alg is provided and kid match for discovery but jwk has alg LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwkDiscovery.spec.js:84:21)"
+    },
+    {
+      "title": "test/getJwkDiscovery.spec.js caches a successful response for discovery LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwkDiscovery.spec.js:98:19)"
+    },
+    {
+      "title": "test/getJwkDiscovery.spec.js does not cache a failed response for discovery LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwkDiscovery.spec.js:118:19)"
+    },
+    {
+      "title": "test/getJwkDiscovery.spec.js rejects if response is an empty object for discovery LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwkDiscovery.spec.js:127:19)"
+    },
+    {
+      "title": "test/getJwkDiscovery.spec.js rejects if no JWKS are found in the response LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwkDiscovery.spec.js:139:19)"
+    },
+    {
+      "title": "test/getJwkDiscovery.spec.js supports domain without trailing slash for discovery LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwkDiscovery.spec.js:154:19)"
+    },
+    {
+      "title": "test/getJwkDiscovery.spec.js does not execute concurrent requests for discovery LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwkDiscovery.spec.js:168:19)"
+    },
+    {
+      "title": "test/getJwkDiscovery.spec.js returns a stale cached value if request fails for discovery LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwkDiscovery.spec.js:189:21)"
+    },
+    {
+      "title": "test/getJwkDiscovery.spec.js allowed domains for discovery allows any domain by default for discovery LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwkDiscovery.spec.js:229:21)"
+    },
+    {
+      "title": "test/getJwkDiscovery.spec.js allowed domains for discovery allows domain https://example.com requested with https://example.com for discovery LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwkDiscovery.spec.js:261:25)"
+    },
+    {
+      "title": "test/getJwkDiscovery.spec.js allowed domains for discovery allows domain https://example.com/ requested with https://example.com/ for discovery LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwkDiscovery.spec.js:261:25)"
+    },
+    {
+      "title": "test/getJwkDiscovery.spec.js allowed domains for discovery allows domain https://example.com requested with https://example.com/ for discovery LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwkDiscovery.spec.js:261:25)"
+    },
+    {
+      "title": "test/getJwkDiscovery.spec.js allowed domains for discovery allows domain https://example.com/ requested with https://example.com for discovery LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwkDiscovery.spec.js:261:25)"
+    },
+    {
+      "title": "test/getJwkDiscovery.spec.js allowed domains for discovery allows multiple domains for discovery LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwkDiscovery.spec.js:291:21)"
+    },
+    {
+      "title": "test/getJwkDiscovery.spec.js allowed domains for discovery forbids domain outside of the allow list LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwkDiscovery.spec.js:303:21)"
+    },
+    {
+      "title": "test/getJwksUri.spec.js throw error if the discovery request fails LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwksUri.spec.js:24:19)"
+    },
+    {
+      "title": "test/getJwksUri.spec.js throw error if the discovery request has no jwks_uri property LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getJwksUri.spec.js:41:21)"
+    },
+    {
+      "title": "test/getPublicKey.spec.js it provides the result of getJwk to jwkToPem LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getPublicKey.spec.js:11:19)"
+    },
+    {
+      "title": "test/getPublicKey.spec.js it rejects if getJwk rejects LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getPublicKey.spec.js:26:19)"
+    },
+    {
+      "title": "test/getPublicKeyDiscovery.spec.js it provides the result of getJwk to jwkToPem for discovery LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getPublicKeyDiscovery.spec.js:13:21)"
+    },
+    {
+      "title": "test/getPublicKeyDiscovery.spec.js it rejects if getJwk rejects for discovery LRU is not a constructor",
+      "message": "LRU is not a constructor",
+      "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getPublicKeyDiscovery.spec.js:29:19)"
+    }
+  ],
+  "ok": false,
+  "infrastructure_error": false,
+  "isolation": "Docker: no network, read-only source, non-root, no capabilities, CPU/memory/PID limits",
+  "image": "node:18-bullseye@sha256:0d9e9a8dcd5a83ea737ed92227a6591a31ad70c8bb722b0c51aff7ae23a88b6a"
+}

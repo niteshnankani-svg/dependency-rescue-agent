@@ -1,7 +1,7 @@
 {
   "exit_code": 1,
   "timed_out": false,
-  "seconds": 3.57,
+  "seconds": 3.89,
   "tests": 51,
   "passes": 0,
   "failures": [
@@ -259,10 +259,36 @@
       "title": "test/getPublicKeyDiscovery.spec.js it rejects if getJwk rejects for discovery LRU is not a constructor",
       "message": "LRU is not a constructor",
       "stack": "Error: LRU is not a constructor\n    at buildGetJwks (src/get-jwks.js:26:22)\n    at Test.<anonymous> (test/getPublicKeyDiscovery.spec.js:29:19)"
+    },
+    {
+      "message": "\n  src/get-jwks.d.ts:26:9\n  \u2716  26:9   Cannot use namespace LRU as a type.  \n  \u2716  27:14  Cannot use namespace LRU as a type.  \n\n  2 errors\n\n"
     }
   ],
   "ok": false,
   "infrastructure_error": false,
   "isolation": "Docker: no network, read-only source, non-root, no capabilities, CPU/memory/PID limits",
-  "image": "node:18-bullseye@sha256:0d9e9a8dcd5a83ea737ed92227a6591a31ad70c8bb722b0c51aff7ae23a88b6a"
+  "image": "node:18-bullseye@sha256:0d9e9a8dcd5a83ea737ed92227a6591a31ad70c8bb722b0c51aff7ae23a88b6a",
+  "additional_checks": [
+    {
+      "command": [
+        "node_modules/tsd/dist/cli.js"
+      ],
+      "exit_code": 1,
+      "timed_out": false,
+      "seconds": 9.47,
+      "tests": 0,
+      "passes": 0,
+      "failures": [
+        {
+          "message": "\n  src/get-jwks.d.ts:26:9\n  \u2716  26:9   Cannot use namespace LRU as a type.  \n  \u2716  27:14  Cannot use namespace LRU as a type.  \n\n  2 errors\n\n"
+        }
+      ],
+      "ok": false,
+      "infrastructure_error": false,
+      "isolation": "Docker: no network, read-only source, non-root, no capabilities, CPU/memory/PID limits",
+      "image": "node:18-bullseye@sha256:0d9e9a8dcd5a83ea737ed92227a6591a31ad70c8bb722b0c51aff7ae23a88b6a"
+    }
+  ],
+  "run_id": "744392a157834d41bcf3740d9b2371d2",
+  "scope": "Final development fixture; canonical test migrations declared in cases.json"
 }

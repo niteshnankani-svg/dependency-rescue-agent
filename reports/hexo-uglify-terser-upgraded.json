@@ -1,23 +1,31 @@
 {
-  "exit_code": 2,
+  "exit_code": 3,
   "timed_out": false,
-  "seconds": 0.65,
-  "tests": 5,
+  "seconds": 0.85,
+  "tests": 6,
   "passes": 3,
   "failures": [
     {
       "title": "hexo-uglify es5 - terser (default options)",
       "message": "Cannot read properties of undefined (reading 'length')",
-      "stack": "TypeError: Cannot read properties of undefined (reading 'length')\n    at Context.<anonymous> (test/index.js:64:12)\n    at process.processImmediate (node:internal/timers:476:21)"
+      "stack": "TypeError: Cannot read properties of undefined (reading 'length')\n    at Context.<anonymous> (test/index.js:64:12)"
     },
     {
       "title": "hexo-uglify es6 - terser (default options)",
       "message": "Cannot read properties of undefined (reading 'length')",
-      "stack": "TypeError: Cannot read properties of undefined (reading 'length')\n    at Context.<anonymous> (test/index.js:93:12)\n    at process.processImmediate (node:internal/timers:476:21)"
+      "stack": "TypeError: Cannot read properties of undefined (reading 'length')\n    at Context.<anonymous> (test/index.js:93:12)"
+    },
+    {
+      "title": "hexo-uglify after_render default",
+      "message": "expected 196 to be below 196",
+      "stack": "AssertionError: expected 196 to be below 196\n    at Context.<anonymous> (test/index.js:189:28)"
     }
   ],
   "ok": false,
   "infrastructure_error": false,
   "isolation": "Docker: no network, read-only source, non-root, no capabilities, CPU/memory/PID limits",
-  "image": "node:18-bullseye@sha256:0d9e9a8dcd5a83ea737ed92227a6591a31ad70c8bb722b0c51aff7ae23a88b6a"
+  "image": "node:18-bullseye@sha256:0d9e9a8dcd5a83ea737ed92227a6591a31ad70c8bb722b0c51aff7ae23a88b6a",
+  "additional_checks": [],
+  "run_id": "1b3f31eaaaab4c519d47d9519bcfc05e",
+  "scope": "Final development fixture; canonical test migrations declared in cases.json"
 }

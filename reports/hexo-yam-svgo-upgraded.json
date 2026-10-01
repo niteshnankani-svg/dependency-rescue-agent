@@ -1,21 +1,20 @@
 {
   "exit_code": 1,
   "timed_out": false,
-  "seconds": 9.22,
+  "seconds": 13.86,
   "tests": 92,
-  "passes": 90,
+  "passes": 91,
   "failures": [
     {
-      "title": "svg option - verbose",
-      "message": "Error: expect(received).toContain(expected) // indexOf\n\nExpected substring: \"id=\\\"a\\\"\"\nReceived string:    \"<svg><path d=\\\"M1 2h3v4H1z\\\"/></svg>\"\n    at RouteStream.toContain (/app/test/svg.test.js:91:22)\n    at RouteStream.emit (node:events:517:28)\n    at endReadableNT (node:internal/streams/readable:1400:12)\n    at processTicksAndRejections (node:internal/process/task_queues:82:21)"
-    },
-    {
       "title": "svg invalid svg",
-      "message": "SvgoParserError: <input>:1:1: Non-whitespace before first tag.\n    at SAXParser.sax.onerror (/app/node_modules/svgo/lib/parser.js:247:19)\n    at emit (/app/node_modules/@trysound/sax/lib/sax.js:518:35)\n    at error (/app/node_modules/@trysound/sax/lib/sax.js:549:5)\n    at strictFail (/app/node_modules/@trysound/sax/lib/sax.js:573:7)\n    at beginWhiteSpace (/app/node_modules/@trysound/sax/lib/sax.js:847:7)\n    at SAXParser.write (/app/node_modules/@trysound/sax/lib/sax.js:902:11)\n    at parseSvg (/app/node_modules/svgo/lib/parser.js:259:7)\n    at optimize (/app/node_modules/svgo/lib/svgo.js:66:17)\n    at optimize (/app/node_modules/svgo/lib/svgo-node.js:76:10)\n    at Object.svgOptimize (/app/test/svg.test.js:120:23)\n    at Promise.then.completed (/app/node_modules/jest-circus/build/utils.js:298:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (/app/node_modules/jest-circus/build/utils.js:231:10)\n    at _callCircusTest (/app/node_modules/jest-circus/build/run.js:316:40)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at _runTest (/app/node_modules/jest-circus/build/run.js:252:3)\n    at _runTestsForDescribeBlock (/app/node_modules/jest-circus/build/run.js:126:9)\n    at _runTestsForDescribeBlock (/app/node_modules/jest-circus/build/run.js:121:9)\n    at run (/app/node_modules/jest-circus/build/run.js:71:3)\n    at runAndTransformResultsToJestFormat (/app/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)\n    at jestAdapter (/app/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)\n    at runTestInternal (/app/node_modules/jest-runner/build/runTest.js:367:16)\n    at runTest (/app/node_modules/jest-runner/build/runTest.js:444:34)"
+      "message": "SvgoParserError: <input>:1:1: Non-whitespace before first tag.\n    at SAXParser.sax.onerror (/app/node_modules/svgo/lib/parser.js:247:19)\n    at emit (/app/node_modules/@trysound/sax/lib/sax.js:518:35)\n    at error (/app/node_modules/@trysound/sax/lib/sax.js:549:5)\n    at strictFail (/app/node_modules/@trysound/sax/lib/sax.js:573:7)\n    at beginWhiteSpace (/app/node_modules/@trysound/sax/lib/sax.js:847:7)\n    at SAXParser.write (/app/node_modules/@trysound/sax/lib/sax.js:902:11)\n    at parseSvg (/app/node_modules/svgo/lib/parser.js:259:7)\n    at optimize (/app/node_modules/svgo/lib/svgo.js:66:17)\n    at optimize (/app/node_modules/svgo/lib/svgo-node.js:76:10)\n    at RouteStream.svgOptimize (/app/lib/filter.js:155:35)\n    at RouteStream.emit (node:events:517:28)\n    at endReadableNT (node:internal/streams/readable:1400:12)\n    at processTicksAndRejections (node:internal/process/task_queues:82:21)\nError: thrown: \"Exceeded timeout of 5000 ms for a test.\nAdd a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.\"\n    at test (/app/test/svg.test.js:116:3)\n    at _dispatchDescribe (/app/node_modules/jest-circus/build/index.js:91:26)\n    at describe (/app/node_modules/jest-circus/build/index.js:55:5)\n    at Object.describe (/app/test/svg.test.js:7:1)\n    at Runtime._execModule (/app/node_modules/jest-runtime/build/index.js:1439:24)\n    at Runtime._loadModule (/app/node_modules/jest-runtime/build/index.js:1022:12)\n    at Runtime.requireModule (/app/node_modules/jest-runtime/build/index.js:882:12)\n    at jestAdapter (/app/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:77:13)\n    at runTestInternal (/app/node_modules/jest-runner/build/runTest.js:367:16)\n    at runTest (/app/node_modules/jest-runner/build/runTest.js:444:34)"
     }
   ],
   "ok": false,
   "infrastructure_error": false,
   "isolation": "Docker: no network, read-only source, non-root, no capabilities, CPU/memory/PID limits",
-  "image": "node:18-bullseye@sha256:0d9e9a8dcd5a83ea737ed92227a6591a31ad70c8bb722b0c51aff7ae23a88b6a"
+  "image": "node:18-bullseye@sha256:0d9e9a8dcd5a83ea737ed92227a6591a31ad70c8bb722b0c51aff7ae23a88b6a",
+  "additional_checks": [],
+  "run_id": "104c0b964a0d4de48f7fd0264f4f1bad",
+  "scope": "Final development fixture; canonical test migrations declared in cases.json"
 }
