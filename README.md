@@ -43,6 +43,10 @@ Open <http://127.0.0.1:8093>. The loopback development UI receives a local HttpO
 .venv/bin/python scripts/isolation_probe.py
 ```
 
+## Frontend
+
+The responsive repair workspace includes live service readiness, recent-run totals, repository search, status filters, an execution timeline, a colored patch viewer, audit history, and explicit review dialogs. See [FRONTEND.md](FRONTEND.md) for setup and browser validation. It is included in the API image and requires no separate frontend build.
+
 ## API
 
 | Endpoint | Behavior |
