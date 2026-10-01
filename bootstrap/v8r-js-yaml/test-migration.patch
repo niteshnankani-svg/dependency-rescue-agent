@@ -1,0 +1,33 @@
+diff --git a/src/cli.spec.js b/src/cli.spec.js
+index ad08ba55..cb10380f 100644
+--- a/src/cli.spec.js
++++ b/src/cli.spec.js
+@@ -116,6 +116,21 @@ describe("CLI", function () {
+         mock2.done();
+       });
+     });
++
++    it("should validate yaml files", function () {
++      const mock = nock("https://example.com")
++        .get("/schema.json")
++        .reply(200, schema);
++
++      return cli({
++        filename: "./testfiles/valid.yaml",
++        schema: "https://example.com/schema.json",
++      }).then((result) => {
++        assert.equal(0, result);
++        expect(messages.log).to.contain("✅ ./testfiles/valid.yaml is valid");
++        mock.done();
++      });
++    });
+   });
+ 
+   describe("error handling", function () {
+diff --git a/testfiles/valid.yaml b/testfiles/valid.yaml
+new file mode 100644
+index 00000000..2e6ecf88
+--- /dev/null
++++ b/testfiles/valid.yaml
+@@ -0,0 +1 @@
++num: 4

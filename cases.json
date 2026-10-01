@@ -1,0 +1,118 @@
+[
+  {
+    "id": "v8r-js-yaml",
+    "repository": "chris48s/v8r",
+    "base_commit": "febc231dc747a4743322ea5eb7d91ca4dc81177d",
+    "dependency": "js-yaml",
+    "old_version": "3.14.x",
+    "target_version": "4.0.0",
+    "template_dir": "templates",
+    "source_globs": [
+      "src/*.js"
+    ],
+    "test_args": [
+      "node_modules/mocha/bin/mocha",
+      "src/**/*.spec.js",
+      "--reporter",
+      "json",
+      "--timeout",
+      "5000"
+    ],
+    "dataset_task": "chris48s__v8r__22",
+    "max_edits": 1,
+    "evaluation_role": "development (verifier feedback used)",
+    "writable_dirs": [
+      "node_modules/flat-cache/.cache"
+    ],
+    "test_migration_files": [
+      "src/cli.spec.js",
+      "testfiles/valid.yaml"
+    ]
+  },
+  {
+    "id": "hexo-uglify-terser",
+    "repository": "hexojs/hexo-uglify",
+    "base_commit": "cca9eb7376b0a2fff9f2e6163957c99c73a55539",
+    "dependency": "terser",
+    "old_version": "4.3.9",
+    "target_version": "5.3.0",
+    "dataset_task": "hexojs__hexo-uglify__147",
+    "source_globs": [
+      "lib/*.js",
+      "index.js"
+    ],
+    "test_args": [
+      "node_modules/mocha/bin/mocha",
+      "test/index.js",
+      "--reporter",
+      "json",
+      "--timeout",
+      "5000"
+    ],
+    "max_edits": 3,
+    "template_dir": "hexojs__hexo-uglify__147/templates",
+    "evaluation_role": "development (canonical async test migration and verifier feedback used)",
+    "test_migration_files": [
+      "test/index.js"
+    ]
+  },
+  {
+    "id": "get-jwks-lru",
+    "repository": "nearform/get-jwks",
+    "base_commit": "d3d40dd801bd6600fab7377f1cc4575245ef4bbd",
+    "dependency": "lru-cache",
+    "old_version": "8.0.0",
+    "target_version": "9.0.0",
+    "dataset_task": "nearform__get-jwks__197",
+    "source_globs": [
+      "src/*.js",
+      "src/*.ts"
+    ],
+    "test_args": [
+      "node_modules/tap/bin/run.js",
+      "--no-coverage",
+      "--reporter=json",
+      "test/*.spec.js"
+    ],
+    "reporter": "tap",
+    "max_edits": 3,
+    "template_dir": "nearform__get-jwks__197/templates",
+    "evaluation_role": "development (canonical upgraded type-test migration; runtime and tsd checks)",
+    "additional_test_args": [
+      [
+        "node_modules/tsd/dist/cli.js"
+      ]
+    ],
+    "test_migration_files": [
+      "test/types/get-jwks.test-d.ts"
+    ]
+  },
+  {
+    "id": "hexo-yam-svgo",
+    "repository": "curbengh/hexo-yam",
+    "base_commit": "4b4d3cb342dd9c7c0d6ac78fb86b064eb2fde6ff",
+    "dependency": "svgo",
+    "old_version": "2.4.0",
+    "target_version": "3.0.0",
+    "dataset_task": "curbengh__hexo-yam__135",
+    "source_globs": [
+      "lib/*.js",
+      "index.js"
+    ],
+    "test_args": [
+      "node_modules/jest/bin/jest.js",
+      "--json",
+      "--runInBand",
+      "--coverage=false",
+      "--cacheDirectory=/tmp/jest",
+      "--no-cache"
+    ],
+    "reporter": "jest",
+    "max_edits": 3,
+    "template_dir": "curbengh__hexo-yam__135/templates",
+    "evaluation_role": "development (upgraded canonical API-contract test migration; original baseline tests)",
+    "test_migration_files": [
+      "test/svg.test.js"
+    ]
+  }
+]

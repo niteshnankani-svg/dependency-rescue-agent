@@ -1,49 +1,63 @@
 # Dependency Rescue
 
-A LangGraph repair desk for dependency upgrades that break application behavior. It reproduces the regression, asks a local model for a guarded source edit, verifies the change, and pauses for review before exporting a patch.
+A LangGraph application that repairs source incompatibilities introduced by dependency upgrades. It proves the original tests pass, reproduces the breakage, proposes bounded source edits, tests them in offline Linux containers, and pauses for a reviewer before exporting a patch. An optional GitHub App can create a draft PR in an explicitly allowed repository.
 
-**Status: working local pilot, not production-qualified.** One real DepBench development case is enabled. Arbitrary repositories, vulnerability discovery, hosted workers and automatic PR creation are not implemented. The UI labels this scope explicitly.
+The enterprise problem is the engineering work left after an upgrade bot opens a dependency PR that breaks tests. This app handles the repair and review workflow; it does not discover every vulnerability or promise every upgrade can be repaired.
 
-## Measured result
+## What is implemented
 
-On the pinned `chris48s/v8r` case: **20/20 baseline → 17/20 after upgrade → 20/20 after Qwen repair**. `js-yaml` stayed at `4.0.0`; tests and manifests passed integrity checks. Earlier model proposals were rejected by the edit guard. This is an adapted macOS development evaluation, not a held-out DepBench score. The reference solution was never downloaded or supplied to the model.
+- Thirteen-node repair graph with three-attempt budgets, persistent checkpoints, human approval and stale-evidence checks.
+- FastAPI, responsive repair desk, multi-case registry, durable queue, cancellation, audit records and idempotency.
+- Separate execution service; tests run without network, host credentials, writable source or elevated capabilities.
+- Role-scoped service keys or RS256 OIDC access tokens; operator and reviewer permissions.
+- Pinned Docker images, API and worker Compose files, optional Caddy HTTPS front door, backup and smoke-test scripts.
+- Four real JavaScript dependency-upgrade cases from pinned upstream repositories and DepBench metadata. Customer cases are added as operator-reviewed snapshots.
 
-See [validation evidence](reports/validation.json), [app framework](APP_FRAMEWORK.md), [agent framework](AGENT_FRAMEWORK.md), and [research decisions](research/DECISIONS.md).
+See [VALIDATION.md](VALIDATION.md) for measured qualification. See [APP_FRAMEWORK.md](APP_FRAMEWORK.md), [AGENT_FRAMEWORK.md](AGENT_FRAMEWORK.md), [DEPLOYMENT.md](DEPLOYMENT.md), and [research/DECISIONS.md](research/DECISIONS.md). Measured outcomes and limitations are in [reports](reports); a passing development case is not a general benchmark score.
 
-## Run locally
+## Model configuration
 
-Supported validation host: Apple Silicon macOS, Python 3.12+, Node/npm for dependency installation, Git, and Ollama. Node 18 is downloaded only for the historical benchmark runner; it is not the production service runtime.
+Create an ignored `.env` file with mode `600`, then set `RESCUE_MODEL_PROVIDER=gemini`, `RESCUE_MODEL=gemini-3.1-pro-preview`, `GEMINI_API_KEY`, and `RESCUE_RUNNER=docker`. For Anthropic set provider `anthropic`, model `claude-sonnet-4-6`, and `ANTHROPIC_API_KEY`. The provider URL defaults automatically; remove any old Ollama URL and `RESCUE_SERIAL_COLIMA` when switching to a hosted provider. Only retrieved source, package documentation and failure excerpts are sent to the selected provider; tests and host credentials are excluded.
+
+Use `scripts/with_env.py` before API or evaluation commands to load this file without shell evaluation. Production Compose accepts either provider key. Ollama remains optional (`RESCUE_MODEL_PROVIDER=ollama`, `RESCUE_MODEL=qwen3:4b`). No automatic provider fallback spends another account’s credits.
+
+## Local setup
+
+Requires Python 3.12+, Docker with a Linux daemon, Git, and a Gemini, Anthropic, Ollama or compatible model API. Allow at least 16 GB available RAM and 20 GB free disk for comfortable local model/worker operation; a remote model avoids competing for local memory. The service runs on Python 3.12; Node 18 is confined to historical benchmark containers.
 
 ```sh
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.lock
 .venv/bin/pip install --no-deps -e .
-ollama pull qwen3:4b
-.venv/bin/python scripts/setup_case.py
-.venv/bin/python -m uvicorn rescue.api:app --host 127.0.0.1 --port 8093
+.venv/bin/python scripts/prepare_linux.py
+.venv/bin/python scripts/with_env.py .venv/bin/python -m uvicorn rescue.api:app --host 127.0.0.1 --port 8093
 ```
 
-Open http://127.0.0.1:8093. Run the case, inspect its evidence and approve or reject export. Approval does not merge or deploy anything. Offline test execution requires the macOS sandbox; unsupported hosts fail closed.
+On a named Docker context, also set `RESCUE_DOCKER_CONTEXT`. Setup fetches checksum-verified upstream archives, installs committed lockfiles with package lifecycle scripts disabled, and refuses to overwrite prepared snapshots. It requires network access; subsequent test execution has no network. It never fetches reference repair solutions. All four cases are development fixtures using canonical test migrations where required by the upgraded API. Terser includes the canonical Hexo integration test; LRU also requires tsd. The model cannot edit these tests. Operator-supplied test migrations are included in the reviewed export. These cases are not an independent holdout.
 
-For CLI validation: `.venv/bin/python scripts/run_case.py`. For application tests: `.venv/bin/pytest -q`. The benchmark's Linux verifier is deliberately excluded from application test discovery.
+Open <http://127.0.0.1:8093>. The loopback development UI receives a local HttpOnly cookie. Direct clients can use the private token in `runtime/.api-token`. Production disables automatic local login: follow the deployment guide for separate hosts, HTTPS and organization credentials.
+
+```sh
+.venv/bin/pytest -q
+.venv/bin/python scripts/with_env.py .venv/bin/python scripts/evaluate.py
+.venv/bin/python scripts/isolation_probe.py
+```
 
 ## API
 
-The local browser receives a same-site HttpOnly session cookie. Direct API clients use the token in `runtime/.api-token` as `Authorization: Bearer <token>`. Keep the service bound to loopback. No token is committed to Git.
-
 | Endpoint | Behavior |
 | --- | --- |
-| `GET /api/cases` | List enabled, prepared development cases |
-| `POST /api/runs` | Queue a run with `case_id` and `idempotency_key` |
-| `GET /api/runs/{id}` | Read graph trace, test evidence and proposed diff |
-| `POST /api/runs/{id}/decision` | Approve/reject the exact `evidence_digest` |
+| `POST /api/session` | Exchange an authorized bearer token for a secure production cookie |
+| `GET /api/cases` | List registered cases and preparation status |
+| `POST /api/runs` | Operator queues a case with an idempotency key |
+| `GET /api/runs/{id}` | Trace, test evidence, model diagnosis and proposed diff |
+| `POST /api/runs/{id}/cancel` | Operator requests cancellation |
+| `POST /api/runs/{id}/decision` | Reviewer approves/rejects the exact evidence digest |
 | `GET /api/runs/{id}/patch` | Download an approved patch |
-| `GET /healthz` | Liveness and qualification status |
+| `POST /api/runs/{id}/publish` | Reviewer creates/reuses an optional allowlisted draft PR |
+| `GET /api/runs/{id}/audit` | Read submission, cancellation, review and delivery records |
+| `GET /healthz`, `GET /readyz` | Liveness and dependency readiness |
 
-SQLite persists both checkpoints and jobs. Run **one API process and one worker**; multi-process workers are not qualified. A maximum of three active/queued requests bounds local load.
+This is a single-organization, single-API-process deployment. It is not a multi-tenant arbitrary-code platform. Docker shares its worker host kernel; deploy the executor on a disposable dedicated VM. Cloud deployment, real organization SSO and customer GitHub App credentials must be configured by the deploying organization. No external repository was modified during evaluation.
 
-## Before cloud deployment
-
-The original goal includes production deployment. This milestone does **not** meet that gate yet. A Dockerfile alone would not supply safe execution of customer code. [DEPLOYMENT.md](DEPLOYMENT.md) lists the concrete remaining worker, evaluation, identity and operational requirements. The current local runner is a controlled development harness, not a multi-tenant isolation boundary.
-
-Private GitHub review material, downloaded benchmark repositories, model weights, credentials and runtime checkpoints are excluded from the repository. Third-party benchmark code retains its upstream license.
+For a constrained development Mac with a dedicated `rescue` Colima profile, set `RESCUE_SERIAL_COLIMA=rescue` and `RESCUE_DOCKER_CONTEXT=colima-rescue` on the API. The scheduler stops only that explicitly selected worker during local inference and restores it before verification. This option refuses production; deploy model and worker separately there. Historical `scripts/setup_case.py` and `scripts/summarize_validation.py` describe the original pilot; use the Linux setup and evaluation commands above for this release.

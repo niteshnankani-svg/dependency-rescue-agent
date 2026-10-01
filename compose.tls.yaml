@@ -1,0 +1,16 @@
+# Add to the API compose, or to the executor compose with RESCUE_UPSTREAM=executor:8094.
+services:
+  gateway:
+    image: caddy:2
+    restart: unless-stopped
+    ports: ["80:80", "443:443", "443:443/udp"]
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - tls-data:/data
+      - tls-config:/config
+    environment:
+      RESCUE_DOMAIN: ${RESCUE_DOMAIN:?Set the domain pointing to this host}
+      RESCUE_UPSTREAM: ${RESCUE_UPSTREAM:-api:8093}
+volumes:
+  tls-data:
+  tls-config:

@@ -1,37 +1,42 @@
-# App framework
+# Application framework
 
-## Company problem
+## User workflow
 
-Engineering and application-security teams defer dependency upgrades when the new version breaks tests or application APIs. The intended product converts a failed upgrade into an evidence-backed repair proposal. The buyer hypothesis is a platform or application-security team managing many repositories. Market evidence establishes an existing product category, not proven willingness to pay for this particular implementation.
-
-## Delivered user flow
-
-1. Select the qualified development case and queue a repair.
-2. Inspect baseline, post-upgrade and post-repair test counts.
-3. Follow the persisted graph trace and inspect the model's diagnosis.
-4. Review the source and dependency diff bound to an evidence digest.
-5. Approve export or reject the proposal. Download the approved patch.
-
-The interface never claims to have fixed a vulnerability: this first dataset case is a compatibility upgrade. Advisory ingestion and exposure prioritization remain future work.
+An operator selects a registered repository/upgrade and starts a repair. The desk displays baseline, broken and repaired test counts alongside a graph trace and proposed diff. A reviewer checks the evidence and approves export or rejects it. Approval binds the actual diff, verification result, installed dependency tree and case definition. Optional delivery opens a draft PR; it never merges or deploys the change.
 
 ## Components
 
-| Component | File | Responsibility |
-| --- | --- | --- |
-| Repair desk | `rescue/static/` | Responsive UI; real API state; no mock success counters |
-| API and queue | `rescue/api.py` | Session/bearer auth, origin/host checks, idempotent submission, bounded queue, decisions |
-| Graph | `rescue/graph.py` | State, regression reproduction, repair loop, verification, durable review and export |
-| Model adapter | `rescue/model.py` | Local Ollama structured output; bounded source context and installed API evidence |
-| Edit guard | `rescue/guards.py` | Source allowlist, exact anchors, one atomic edit, test/manifest integrity |
-| Isolated runner | `rescue/runner.py` | Offline macOS process, read-only source, bounded runtime |
-| Data preparation | `scripts/setup_case.py` | Pinned benchmark/base/runtime setup; install scripts disabled |
-| Research | `research/` | Inventory summary, dataset provenance, fit and reuse decisions |
-| Evidence | `reports/validation.json` | Actual development-run measurements and limitations |
+| File | Responsibility |
+| --- | --- |
+| `rescue/api.py` | HTTP API, durable SQLite queue, leases, cancellation, approval, audit trail |
+| `rescue/static/` | Repair desk, repository selector, run history, evidence and review UI |
+| `rescue/auth.py` | Operator/reviewer/viewer roles, service keys, fixed-issuer RS256 OIDC verification |
+| `rescue/config.py`, `cases.json` | Operator-owned repository revisions, source allowlists, dependency versions, test commands and budgets |
+| `rescue/graph.py` | Durable LangGraph workflow and approval interrupt |
+| `rescue/providers.py` | Gemini, Anthropic, Ollama and compatible-provider configuration; environment-only credentials |
+| `rescue/model.py` | Bounded source retrieval, installed dependency API evidence, structured model requests |
+| `rescue/guards.py` | Credential-pattern preflight, allowed source edits, exact anchors, dangerous-edit checks and integrity hashes |
+| `rescue/execution.py` | Offline Docker runner, time/output/resource bounds, reporter parsing, remote worker client |
+| `rescue/executor_api.py` | Authenticated execution service on a dedicated worker VM |
+| `rescue/delivery.py` | Optional allowlisted GitHub App draft PR delivery with stale-base refusal |
+| `rescue/resources.py` | Explicit development-only Mac scheduling; dedicated worker suspended during local model inference |
+| `rescue/readiness.py` | Model, prepared-data and executor readiness |
+| `scripts/prepare_linux.py` | Checksum-verified sources and lockfile-based Linux setup |
+| `scripts/register_case.py` | Customer case registration from reviewed prepared snapshots |
+| `scripts/backup.py` | Online SQLite backup plus artifacts and optional workspaces |
 
-## Data and model
+## Runtime boundaries
 
-DepBench provides real dependency-upgrade cases. The downloaded snapshot has 201 tasks; only one is enabled in this app. Its repository license is MIT. The model is local Qwen3 4B, quantized through Ollama. No fine-tuning occurred. Your complaint and sentiment classifiers were assessed and rejected for this task because their output labels do not express code-repair operations.
+The API persists checkpoints, queue and audit records under `RESCUE_RUNTIME`. It sends only source snapshots and a registered case ID to the execution service. The execution service supplies its own registered tests and dependencies, rejecting unexpected paths or missing files. It launches a read-only, non-root, network-disabled test container and returns a bounded result. The API has no Docker socket; only the dedicated worker controller does.
 
-## Production acceptance gates still open
+Use one API process with its built-in worker. Job leases recover interrupted work after restart. Graph nodes repeat safe preparation/testing rather than treating interrupted execution as success. The queue allows three active/queued jobs; the executor runs one test job at a time. This is bounded concurrency, not horizontal scaling or a high-availability guarantee.
 
-Multi-repository adapters; untouched held-out evaluation; isolated Linux workers; credential separation; OIDC/RBAC; audit retention; real customer trial; dependency-advisory integration; authorized draft-PR delivery. See DEPLOYMENT.md. Adding decorative graph nodes or more models would not satisfy these gates.
+## Customer onboarding
+
+Prepare baseline and upgraded snapshots in a controlled environment, with lifecycle scripts disabled and reviewed test commands. Confirm the original tests pass and the upgrade fails. Register a JSON case through `scripts/register_case.py`; deploy the same registry and snapshots to API and worker. Untrusted callers cannot provide commands, repository URLs, filesystem paths or dependency versions through the public run API.
+
+Source credential detection is heuristic and does not replace repository secret scanning. Model text and package documentation are untrusted inputs. Source edits must still satisfy executable tests and human review. Passing tests cannot prove absence of every semantic regression or malicious behavior.
+
+## Test contracts and export
+
+Operator-approved version-specific test migrations are stored in `bootstrap/<case>/test-migration.patch`; models cannot change them. They are protected during verification and included in exported patches. Original source manifests are preserved in `bootstrap/<case>/base` so exports apply to the pinned upstream revision, including any required test dependencies. `scripts/qualify_artifacts.py` checks patch application and byte equality against verified files. Additional registered commands such as `tsd` must pass as well as the runtime test suite.

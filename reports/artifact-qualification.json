@@ -1,0 +1,34 @@
+[
+  {
+    "case_id": "v8r-js-yaml",
+    "run_id": "a8a5b764723c40fd8db652d899b22bbb",
+    "tests_passed": 20,
+    "additional_checks_passed": true,
+    "patch_applies_to_pristine_base": true,
+    "patched_files_equal_verified_files": true
+  },
+  {
+    "case_id": "hexo-uglify-terser",
+    "run_id": "1b3f31eaaaab4c519d47d9519bcfc05e",
+    "tests_passed": 6,
+    "additional_checks_passed": true,
+    "patch_applies_to_pristine_base": true,
+    "patched_files_equal_verified_files": true
+  },
+  {
+    "case_id": "get-jwks-lru",
+    "run_id": "744392a157834d41bcf3740d9b2371d2",
+    "tests_passed": 73,
+    "additional_checks_passed": true,
+    "patch_applies_to_pristine_base": true,
+    "patched_files_equal_verified_files": true
+  },
+  {
+    "case_id": "hexo-yam-svgo",
+    "run_id": "104c0b964a0d4de48f7fd0264f4f1bad",
+    "tests_passed": 92,
+    "additional_checks_passed": true,
+    "patch_applies_to_pristine_base": true,
+    "patched_files_equal_verified_files": true
+  }
+]

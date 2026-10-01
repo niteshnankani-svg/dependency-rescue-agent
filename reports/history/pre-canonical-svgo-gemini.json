@@ -1,0 +1,213 @@
+{
+  "run_id": "d30b4c940e714d6a85ce8bc85d55eb01",
+  "case_id": "hexo-yam-svgo",
+  "status": "needs_engineer",
+  "baseline": {
+    "exit_code": 0,
+    "timed_out": false,
+    "seconds": 6.74,
+    "tests": 92,
+    "passes": 92,
+    "failures": [],
+    "ok": true,
+    "infrastructure_error": false,
+    "isolation": "Docker: no network, read-only source, non-root, no capabilities, CPU/memory/PID limits",
+    "image": "node:18-bullseye@sha256:0d9e9a8dcd5a83ea737ed92227a6591a31ad70c8bb722b0c51aff7ae23a88b6a"
+  },
+  "broken": {
+    "exit_code": 1,
+    "timed_out": false,
+    "seconds": 7.58,
+    "tests": 92,
+    "passes": 90,
+    "failures": [
+      {
+        "title": "svg option - verbose",
+        "message": "Error: expect(received).toContain(expected) // indexOf\n\nExpected substring: \"id=\\\"a\\\"\"\nReceived string:    \"<svg><path d=\\\"M1 2h3v4H1z\\\"/></svg>\"\n    at RouteStream.toContain (/app/test/svg.test.js:91:22)\n    at RouteStream.emit (node:events:517:28)\n    at endReadableNT (node:internal/streams/readable:1400:12)\n    at processTicksAndRejections (node:internal/process/task_queues:82:21)"
+      },
+      {
+        "title": "svg invalid svg",
+        "message": "SvgoParserError: <input>:1:1: Non-whitespace before first tag.\n    at SAXParser.sax.onerror (/app/node_modules/svgo/lib/parser.js:247:19)\n    at emit (/app/node_modules/@trysound/sax/lib/sax.js:518:35)\n    at error (/app/node_modules/@trysound/sax/lib/sax.js:549:5)\n    at strictFail (/app/node_modules/@trysound/sax/lib/sax.js:573:7)\n    at beginWhiteSpace (/app/node_modules/@trysound/sax/lib/sax.js:847:7)\n    at SAXParser.write (/app/node_modules/@trysound/sax/lib/sax.js:902:11)\n    at parseSvg (/app/node_modules/svgo/lib/parser.js:259:7)\n    at optimize (/app/node_modules/svgo/lib/svgo.js:66:17)\n    at optimize (/app/node_modules/svgo/lib/svgo-node.js:76:10)\n    at Object.svgOptimize (/app/test/svg.test.js:120:23)\n    at Promise.then.completed (/app/node_modules/jest-circus/build/utils.js:298:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (/app/node_modules/jest-circus/build/utils.js:231:10)\n    at _callCircusTest (/app/node_modules/jest-circus/build/run.js:316:40)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at _runTest (/app/node_modules/jest-circus/build/run.js:252:3)\n    at _runTestsForDescribeBlock (/app/node_modules/jest-circus/build/run.js:126:9)\n    at _runTestsForDescribeBlock (/app/node_modules/jest-circus/build/run.js:121:9)\n    at run (/app/node_modules/jest-circus/build/run.js:71:3)\n    at runAndTransformResultsToJestFormat (/app/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)\n    at jestAdapter (/app/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)\n    at runTestInternal (/app/node_modules/jest-runner/build/runTest.js:367:16)\n    at runTest (/app/node_modules/jest-runner/build/runTest.js:444:34)"
+      }
+    ],
+    "ok": false,
+    "infrastructure_error": false,
+    "isolation": "Docker: no network, read-only source, non-root, no capabilities, CPU/memory/PID limits",
+    "image": "node:18-bullseye@sha256:0d9e9a8dcd5a83ea737ed92227a6591a31ad70c8bb722b0c51aff7ae23a88b6a"
+  },
+  "verification": {
+    "exit_code": 1,
+    "timed_out": false,
+    "seconds": 7.32,
+    "tests": 92,
+    "passes": 90,
+    "failures": [
+      {
+        "title": "svg option - verbose",
+        "message": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: \"<svg><path d=\\\"M1 2h3v4H1z\\\"/></svg>\"\nReceived: \"<svg><path id=\\\"a\\\" d=\\\"M1 2h3v4H1z\\\"/></svg>\"\n    at RouteStream.toBe (/app/test/svg.test.js:90:22)\n    at RouteStream.emit (node:events:517:28)\n    at endReadableNT (node:internal/streams/readable:1400:12)\n    at processTicksAndRejections (node:internal/process/task_queues:82:21)"
+      },
+      {
+        "title": "svg invalid svg",
+        "message": "SvgoParserError: <input>:1:1: Non-whitespace before first tag.\n    at SAXParser.sax.onerror (/app/node_modules/svgo/lib/parser.js:247:19)\n    at emit (/app/node_modules/@trysound/sax/lib/sax.js:518:35)\n    at error (/app/node_modules/@trysound/sax/lib/sax.js:549:5)\n    at strictFail (/app/node_modules/@trysound/sax/lib/sax.js:573:7)\n    at beginWhiteSpace (/app/node_modules/@trysound/sax/lib/sax.js:847:7)\n    at SAXParser.write (/app/node_modules/@trysound/sax/lib/sax.js:902:11)\n    at parseSvg (/app/node_modules/svgo/lib/parser.js:259:7)\n    at optimize (/app/node_modules/svgo/lib/svgo.js:66:17)\n    at optimize (/app/node_modules/svgo/lib/svgo-node.js:76:10)\n    at Object.svgOptimize (/app/test/svg.test.js:120:23)\n    at Promise.then.completed (/app/node_modules/jest-circus/build/utils.js:298:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (/app/node_modules/jest-circus/build/utils.js:231:10)\n    at _callCircusTest (/app/node_modules/jest-circus/build/run.js:316:40)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at _runTest (/app/node_modules/jest-circus/build/run.js:252:3)\n    at _runTestsForDescribeBlock (/app/node_modules/jest-circus/build/run.js:126:9)\n    at _runTestsForDescribeBlock (/app/node_modules/jest-circus/build/run.js:121:9)\n    at run (/app/node_modules/jest-circus/build/run.js:71:3)\n    at runAndTransformResultsToJestFormat (/app/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)\n    at jestAdapter (/app/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)\n    at runTestInternal (/app/node_modules/jest-runner/build/runTest.js:367:16)\n    at runTest (/app/node_modules/jest-runner/build/runTest.js:444:34)"
+      }
+    ],
+    "ok": false,
+    "infrastructure_error": false,
+    "isolation": "Docker: no network, read-only source, non-root, no capabilities, CPU/memory/PID limits",
+    "image": "node:18-bullseye@sha256:0d9e9a8dcd5a83ea737ed92227a6591a31ad70c8bb722b0c51aff7ae23a88b6a",
+    "integrity_ok": true,
+    "dependency_version": "3.0.0"
+  },
+  "attempts": 3,
+  "model_calls": [
+    {
+      "model": "gemini-3.1-pro-preview",
+      "provider": "gemini",
+      "attempt": 1,
+      "thinking_enabled": false,
+      "chunks": [
+        {
+          "path": "lib/filter.js",
+          "line": 102,
+          "score": 41
+        },
+        {
+          "path": "lib/filter.js",
+          "line": 181,
+          "score": 33
+        },
+        {
+          "path": "index.js",
+          "line": 1,
+          "score": 10
+        }
+      ],
+      "input_tokens": 6650,
+      "output_tokens": 411,
+      "reasoning_tokens": 4866,
+      "finish_reason": "STOP",
+      "valid": true
+    },
+    {
+      "model": "gemini-3.1-pro-preview",
+      "provider": "gemini",
+      "attempt": 2,
+      "thinking_enabled": false,
+      "chunks": [
+        {
+          "path": "lib/filter.js",
+          "line": 102,
+          "score": 119
+        },
+        {
+          "path": "lib/filter.js",
+          "line": 181,
+          "score": 91
+        },
+        {
+          "path": "index.js",
+          "line": 1,
+          "score": 19
+        }
+      ],
+      "input_tokens": 7196,
+      "output_tokens": 318,
+      "reasoning_tokens": 7860,
+      "finish_reason": "MAX_TOKENS",
+      "valid": false
+    },
+    {
+      "model": "gemini-3.1-pro-preview",
+      "provider": "gemini",
+      "attempt": 3,
+      "thinking_enabled": false,
+      "chunks": [
+        {
+          "path": "lib/filter.js",
+          "line": 102,
+          "score": 43
+        },
+        {
+          "path": "lib/filter.js",
+          "line": 201,
+          "score": 35
+        },
+        {
+          "path": "index.js",
+          "line": 1,
+          "score": 10
+        }
+      ],
+      "input_tokens": 6726,
+      "output_tokens": 398,
+      "reasoning_tokens": 5748,
+      "finish_reason": "STOP",
+      "valid": true
+    }
+  ],
+  "events": [
+    {
+      "node": "intake",
+      "detail": "Pinned curbengh/hexo-yam@4b4d3cb342dd; isolated workspace created"
+    },
+    {
+      "node": "baseline",
+      "detail": "92/92 baseline tests passed"
+    },
+    {
+      "node": "upgrade",
+      "detail": "Applied pinned upgrade to svgo 3.0.0"
+    },
+    {
+      "node": "reproduce",
+      "detail": "2 failures; regression reproduced=True"
+    },
+    {
+      "node": "investigate",
+      "detail": "Compared original and upgraded package APIs; retrieved 3 bounded evidence sections"
+    },
+    {
+      "node": "diagnose",
+      "detail": "Model proposed a structured source repair"
+    },
+    {
+      "node": "normalize",
+      "detail": "Candidate needs no import binding normalization"
+    },
+    {
+      "node": "apply",
+      "detail": "Validated exact-match source edits: lib/filter.js"
+    },
+    {
+      "node": "verify",
+      "detail": "90/92 tests passed; integrity=True"
+    },
+    {
+      "node": "diagnose",
+      "detail": "Model output failed schema validation; charged against retry budget"
+    },
+    {
+      "node": "diagnose",
+      "detail": "Model proposed a structured source repair"
+    },
+    {
+      "node": "normalize",
+      "detail": "Candidate needs no import binding normalization"
+    },
+    {
+      "node": "apply",
+      "detail": "Validated exact-match source edits: lib/filter.js"
+    },
+    {
+      "node": "verify",
+      "detail": "90/92 tests passed; integrity=True"
+    },
+    {
+      "node": "escalate",
+      "detail": "Repair budget exhausted or integrity violation; no export"
+    }
+  ],
+  "error": "Verification still fails after the repair budget; engineer review required",
+  "reference_solution_accessed": false,
+  "independent_verifier": "not yet run"
+}

@@ -1,0 +1,139 @@
+{
+  "run_id": "c1237ec72edc497aa67d05b30f1be305",
+  "case_id": "v8r-js-yaml",
+  "status": "awaiting_approval",
+  "baseline": {
+    "exit_code": 0,
+    "timed_out": false,
+    "seconds": 1.08,
+    "tests": 20,
+    "passes": 20,
+    "failures": [],
+    "ok": true,
+    "infrastructure_error": false,
+    "isolation": "Docker: no network, read-only source, non-root, no capabilities, CPU/memory/PID limits",
+    "image": "node:18-bullseye@sha256:0d9e9a8dcd5a83ea737ed92227a6591a31ad70c8bb722b0c51aff7ae23a88b6a"
+  },
+  "broken": {
+    "exit_code": 3,
+    "timed_out": false,
+    "seconds": 1.08,
+    "tests": 20,
+    "passes": 17,
+    "failures": [
+      {
+        "title": "CLI success behaviour should validate yaml files",
+        "message": "expected 0 to equal 1",
+        "stack": "AssertionError: expected 0 to equal 1\n    at /app/src/cli.spec.js:129:16"
+      },
+      {
+        "title": "CLI error handling should return 1 if invalid response fetching auto-detected schema",
+        "message": "expected 1 to equal 0",
+        "stack": "AssertionError: expected 1 to equal 0\n    at /app/src/cli.spec.js:171:16\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)"
+      },
+      {
+        "title": "CLI error handling should return 1 if invalid response fetching user-supplied schema",
+        "message": "Mocks not yet satisfied:\nGET https://example.com:443/schema.json",
+        "stack": "AssertionError [ERR_ASSERTION]: Mocks not yet satisfied:\nGET https://example.com:443/schema.json\n    at Scope.done (node_modules/nock/lib/scope.js:166:12)\n    at /app/src/cli.spec.js:250:14\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)"
+      }
+    ],
+    "ok": false,
+    "infrastructure_error": false,
+    "isolation": "Docker: no network, read-only source, non-root, no capabilities, CPU/memory/PID limits",
+    "image": "node:18-bullseye@sha256:0d9e9a8dcd5a83ea737ed92227a6591a31ad70c8bb722b0c51aff7ae23a88b6a"
+  },
+  "verification": {
+    "exit_code": 0,
+    "timed_out": false,
+    "seconds": 1.22,
+    "tests": 20,
+    "passes": 20,
+    "failures": [],
+    "ok": true,
+    "infrastructure_error": false,
+    "isolation": "Docker: no network, read-only source, non-root, no capabilities, CPU/memory/PID limits",
+    "image": "node:18-bullseye@sha256:0d9e9a8dcd5a83ea737ed92227a6591a31ad70c8bb722b0c51aff7ae23a88b6a",
+    "integrity_ok": true,
+    "dependency_version": "4.0.0"
+  },
+  "attempts": 1,
+  "model_calls": [
+    {
+      "model": "qwen3:4b",
+      "provider": "ollama",
+      "attempt": 1,
+      "chunks": [
+        {
+          "path": "src/cli.js",
+          "line": 1,
+          "score": 37
+        },
+        {
+          "path": "src/cache.js",
+          "line": 1,
+          "score": 14
+        },
+        {
+          "path": "src/index.js",
+          "line": 1,
+          "score": 3
+        },
+        {
+          "path": "src/logging.js",
+          "line": 1,
+          "score": 0
+        }
+      ],
+      "input_tokens": 5681,
+      "output_tokens": 154,
+      "duration_seconds": 60.65,
+      "finish_reason": "stop",
+      "valid": true
+    }
+  ],
+  "events": [
+    {
+      "node": "intake",
+      "detail": "Pinned chris48s/v8r@febc231dc747; isolated workspace created"
+    },
+    {
+      "node": "baseline",
+      "detail": "20/20 baseline tests passed"
+    },
+    {
+      "node": "upgrade",
+      "detail": "Applied pinned upgrade to js-yaml 4.0.0"
+    },
+    {
+      "node": "reproduce",
+      "detail": "3 failures; regression reproduced=True"
+    },
+    {
+      "node": "investigate",
+      "detail": "Compared original and upgraded package APIs; retrieved 3 bounded evidence sections"
+    },
+    {
+      "node": "diagnose",
+      "detail": "Model proposed a structured source repair"
+    },
+    {
+      "node": "normalize",
+      "detail": "Candidate needs no import binding normalization"
+    },
+    {
+      "node": "apply",
+      "detail": "Validated exact-match source edits: src/cli.js"
+    },
+    {
+      "node": "verify",
+      "detail": "20/20 tests passed; integrity=True"
+    },
+    {
+      "node": "evidence",
+      "detail": "Diff, target version, test counts and integrity bound to an approval digest"
+    }
+  ],
+  "error": "",
+  "reference_solution_accessed": false,
+  "independent_verifier": "not yet run"
+}

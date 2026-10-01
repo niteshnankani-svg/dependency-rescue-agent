@@ -10,9 +10,20 @@ import tempfile
 import time
 
 
-def run_tests(root: Path, timeout: int = 60) -> dict:
+def run_tests(root: Path, timeout: int = 60, case=None, phase='upgraded') -> dict:
+    from .config import get_case
+    selected=case or get_case()
+    mode=os.getenv('RESCUE_RUNNER','seatbelt')
+    if mode=='remote':
+        from .execution import remote_execute
+        return remote_execute(root,selected,phase)
+    if mode=='docker':
+        from .execution import docker_execute
+        return docker_execute(root,selected)
+    if os.getenv('RESCUE_ENV')=='production':
+        raise RuntimeError('Production requires remote isolated execution')
     if sys.platform != 'darwin' or not Path('/usr/bin/sandbox-exec').exists():
-        raise RuntimeError('No supported isolated runner. Local execution requires macOS Seatbelt; Linux worker not yet qualified.')
+        raise RuntimeError('No supported isolated runner. Set RESCUE_RUNNER=docker for Linux containers or remote for the dedicated execution service.')
     root = root.resolve()
     node = Path(os.getenv('RESCUE_NODE', str(Path(__file__).resolve().parents[1]/'data/external/node-v18.20.8-darwin-arm64/bin/node'))).resolve()
     if not node.is_file():
@@ -30,7 +41,7 @@ def run_tests(root: Path, timeout: int = 60) -> dict:
 (deny file-write*)
 (allow file-write* (literal "/dev/null") (subpath {json.dumps(str(scratch))}) (subpath {json.dumps(str(cache))}))
 '''
-        command = ['/usr/bin/sandbox-exec', '-p', profile, str(node), 'node_modules/mocha/bin/mocha', 'src/**/*.spec.js', '--reporter', 'json', '--timeout', '5000']
+        command = ['/usr/bin/sandbox-exec', '-p', profile, str(node), *selected.test_args]
         start = time.monotonic()
         with (scratch / 'output').open('w+') as output:
             proc = subprocess.Popen(command, cwd=root, env={'PATH':str(node.parent), 'HOME':str(scratch), 'TMPDIR':str(scratch), 'V8R_CACHE_NAME':'rescue-test', 'NO_COLOR':'1'}, stdout=output, stderr=subprocess.STDOUT, start_new_session=True)

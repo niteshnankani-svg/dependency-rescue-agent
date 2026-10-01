@@ -1,0 +1,171 @@
+{
+  "run_id": "1b3f31eaaaab4c519d47d9519bcfc05e",
+  "case_id": "hexo-uglify-terser",
+  "status": "awaiting_approval",
+  "baseline": {
+    "exit_code": 0,
+    "timed_out": false,
+    "seconds": 0.96,
+    "tests": 6,
+    "passes": 6,
+    "failures": [],
+    "ok": true,
+    "infrastructure_error": false,
+    "isolation": "Docker: no network, read-only source, non-root, no capabilities, CPU/memory/PID limits",
+    "image": "node:18-bullseye@sha256:0d9e9a8dcd5a83ea737ed92227a6591a31ad70c8bb722b0c51aff7ae23a88b6a",
+    "additional_checks": []
+  },
+  "broken": {
+    "exit_code": 3,
+    "timed_out": false,
+    "seconds": 0.85,
+    "tests": 6,
+    "passes": 3,
+    "failures": [
+      {
+        "title": "hexo-uglify es5 - terser (default options)",
+        "message": "Cannot read properties of undefined (reading 'length')",
+        "stack": "TypeError: Cannot read properties of undefined (reading 'length')\n    at Context.<anonymous> (test/index.js:64:12)"
+      },
+      {
+        "title": "hexo-uglify es6 - terser (default options)",
+        "message": "Cannot read properties of undefined (reading 'length')",
+        "stack": "TypeError: Cannot read properties of undefined (reading 'length')\n    at Context.<anonymous> (test/index.js:93:12)"
+      },
+      {
+        "title": "hexo-uglify after_render default",
+        "message": "expected 196 to be below 196",
+        "stack": "AssertionError: expected 196 to be below 196\n    at Context.<anonymous> (test/index.js:189:28)"
+      }
+    ],
+    "ok": false,
+    "infrastructure_error": false,
+    "isolation": "Docker: no network, read-only source, non-root, no capabilities, CPU/memory/PID limits",
+    "image": "node:18-bullseye@sha256:0d9e9a8dcd5a83ea737ed92227a6591a31ad70c8bb722b0c51aff7ae23a88b6a",
+    "additional_checks": []
+  },
+  "verification": {
+    "exit_code": 0,
+    "timed_out": false,
+    "seconds": 1.11,
+    "tests": 6,
+    "passes": 6,
+    "failures": [],
+    "ok": true,
+    "infrastructure_error": false,
+    "isolation": "Docker: no network, read-only source, non-root, no capabilities, CPU/memory/PID limits",
+    "image": "node:18-bullseye@sha256:0d9e9a8dcd5a83ea737ed92227a6591a31ad70c8bb722b0c51aff7ae23a88b6a",
+    "additional_checks": [],
+    "integrity_ok": true,
+    "dependency_version": "5.3.0"
+  },
+  "attempts": 2,
+  "model_calls": [
+    {
+      "model": "gemini-3.1-pro-preview",
+      "provider": "gemini",
+      "attempt": 1,
+      "thinking_enabled": false,
+      "chunks": [
+        {
+          "path": "lib/filter-terser.js",
+          "line": 1,
+          "score": 17
+        },
+        {
+          "path": "index.js",
+          "line": 1,
+          "score": 12
+        },
+        {
+          "path": "lib/filter-uglifyjs.js",
+          "line": 1,
+          "score": 7
+        }
+      ],
+      "input_tokens": 2832,
+      "output_tokens": 318,
+      "reasoning_tokens": 7860,
+      "finish_reason": "MAX_TOKENS",
+      "valid": false
+    },
+    {
+      "model": "gemini-3.1-pro-preview",
+      "provider": "gemini",
+      "attempt": 2,
+      "thinking_enabled": false,
+      "chunks": [
+        {
+          "path": "lib/filter-terser.js",
+          "line": 1,
+          "score": 17
+        },
+        {
+          "path": "index.js",
+          "line": 1,
+          "score": 12
+        },
+        {
+          "path": "lib/filter-uglifyjs.js",
+          "line": 1,
+          "score": 7
+        }
+      ],
+      "input_tokens": 2866,
+      "output_tokens": 213,
+      "reasoning_tokens": 3797,
+      "finish_reason": "STOP",
+      "valid": true
+    }
+  ],
+  "events": [
+    {
+      "node": "intake",
+      "detail": "Pinned hexojs/hexo-uglify@cca9eb7376b0; isolated workspace created"
+    },
+    {
+      "node": "baseline",
+      "detail": "6/6 baseline tests passed"
+    },
+    {
+      "node": "upgrade",
+      "detail": "Applied pinned upgrade to terser 5.3.0"
+    },
+    {
+      "node": "reproduce",
+      "detail": "3 failures; regression reproduced=True"
+    },
+    {
+      "node": "investigate",
+      "detail": "Compared original and upgraded package APIs; retrieved 2 bounded evidence sections"
+    },
+    {
+      "node": "diagnose",
+      "detail": "Model output failed schema validation; charged against retry budget"
+    },
+    {
+      "node": "diagnose",
+      "detail": "Model proposed a structured source repair"
+    },
+    {
+      "node": "normalize",
+      "detail": "Candidate needs no import binding normalization"
+    },
+    {
+      "node": "apply",
+      "detail": "Validated exact-match source edits: lib/filter-terser.js"
+    },
+    {
+      "node": "verify",
+      "detail": "6/6 tests passed; integrity=True"
+    },
+    {
+      "node": "evidence",
+      "detail": "Diff, target version, test counts and integrity bound to an approval digest"
+    }
+  ],
+  "error": "",
+  "reference_solution_accessed": false,
+  "independent_verifier": "Development tests; canonical API-contract migrations are operator supplied, not held out",
+  "artifact_applies_to_pristine_base": true
+}

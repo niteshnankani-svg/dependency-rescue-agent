@@ -1,0 +1,10 @@
+{
+  "date": "2026-10-01",
+  "configuration_checks": {
+    "compose.yaml+compose.tls.yaml": true,
+    "compose.executor.yaml+compose.tls.yaml": true,
+    "compose.model.yaml": true
+  },
+  "customer_tls_issuance_tested": false,
+  "model_container_runtime_tested": false
+}

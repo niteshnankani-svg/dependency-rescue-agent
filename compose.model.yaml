@@ -1,0 +1,30 @@
+# Optional private CPU model service. Provision adequate RAM or use a remote model URL.
+services:
+  model:
+    image: ollama/ollama:0.35.0@sha256:2a6e883b917fc543389599dae79918f5cac9e1438890506982f44aa4f5625d01
+    restart: unless-stopped
+    ports: ["127.0.0.1:11434:11434"]
+    volumes: ["model-data:/root/.ollama"]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    environment:
+      OLLAMA_HOST: 0.0.0.0:11434
+      OLLAMA_NUM_PARALLEL: "1"
+      OLLAMA_MAX_LOADED_MODELS: "1"
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+  model-init:
+    image: ollama/ollama:0.35.0@sha256:2a6e883b917fc543389599dae79918f5cac9e1438890506982f44aa4f5625d01
+    entrypoint: ["ollama"]
+    command: ["pull", "${RESCUE_MODEL:-qwen3:4b}"]
+    depends_on:
+      model:
+        condition: service_healthy
+    environment:
+      OLLAMA_HOST: http://model:11434
+    restart: on-failure
+volumes:
+  model-data:

@@ -1,0 +1,34 @@
+services:
+  api:
+    build:
+      context: .
+      target: api
+    restart: unless-stopped
+    ports: ["127.0.0.1:8093:8093"]
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs: ["/tmp:size=64m"]
+    volumes:
+      - runtime:/runtime
+      - ${RESCUE_DATA_ROOT:?Set absolute prepared-data directory}:/data:ro
+    environment:
+      RESCUE_ENV: production
+      RESCUE_RUNNER: remote
+      RESCUE_ALLOWED_HOSTS: ${RESCUE_ALLOWED_HOSTS:?Set allowed hosts}
+      RESCUE_AUTH_KEYS: ${RESCUE_AUTH_KEYS:-[]}
+      RESCUE_OIDC_ISSUER: ${RESCUE_OIDC_ISSUER:-}
+      RESCUE_OIDC_AUDIENCE: ${RESCUE_OIDC_AUDIENCE:-}
+      RESCUE_OIDC_JWKS_URL: ${RESCUE_OIDC_JWKS_URL:-}
+      RESCUE_EXECUTOR_URL: ${RESCUE_EXECUTOR_URL:?Set dedicated executor URL}
+      RESCUE_EXECUTOR_TOKEN: ${RESCUE_EXECUTOR_TOKEN:?Set executor token}
+      RESCUE_PRIVATE_EXECUTOR: ${RESCUE_PRIVATE_EXECUTOR:-0}
+      RESCUE_MODEL_TIMEOUT: ${RESCUE_MODEL_TIMEOUT:-300}
+      RESCUE_MODEL_PROVIDER: ${RESCUE_MODEL_PROVIDER:-ollama}
+      RESCUE_MODEL: ${RESCUE_MODEL:-qwen3:4b}
+      RESCUE_MODEL_URL: ${RESCUE_MODEL_URL:?Set model URL}
+      RESCUE_MODEL_API_KEY: ${RESCUE_MODEL_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+volumes:
+  runtime:

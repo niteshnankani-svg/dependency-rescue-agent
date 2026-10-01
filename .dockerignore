@@ -1,0 +1,10 @@
+.git
+.venv
+.env*
+runtime
+data
+research/private
+reports/latest-run.json
+**/__pycache__
+.pytest_cache
+*.egg-info

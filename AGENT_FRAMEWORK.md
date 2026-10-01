@@ -1,53 +1,51 @@
 # Agent framework
 
-The graph has actual branching, bounded retries, persistent state and an interrupt. It performs a source change and verifies executable behavior rather than generating an answer from retrieved documents.
+The graph solves a concrete engineering workflow: produce a reviewable source repair for a reproducibly broken dependency upgrade. The model is a proposer; deterministic code controls execution, edit permissions, verification, retries and delivery.
 
 ```mermaid
 flowchart TD
-    I[Intake pinned case] --> B[Run baseline tests]
-    B -->|baseline valid| U[Apply prepared dependency upgrade]
-    B -->|baseline fails| X[Block]
-    U --> R[Reproduce regression]
-    R -->|regression proven| D[Diagnose with source and installed API]
-    R -->|not reproduced| X
-    D --> A[Validate and apply exact source edit]
-    A -->|valid| V[Run isolated tests and integrity checks]
-    A -->|invalid, budget remains| D
-    A -->|budget exhausted| E[Engineer escalation]
-    V -->|failed, budget remains| D
-    V -->|failed or tampered| E
-    V -->|passed| P[Build diff and evidence digest]
-    P --> H[Persistent human review interrupt]
-    H -->|approve exact digest| F[Check freshness and export patch]
-    H -->|reject| N[Rejected]
+    A[Intake and source preflight] --> B[Baseline tests]
+    B -->|pass| C[Apply pinned dependency environment]
+    B -->|fail| X[Blocked]
+    C --> D[Reproduce regression]
+    D -->|failure reproduced| E[Retrieve source and installed API evidence]
+    D -->|no regression or infrastructure failure| X
+    E --> F[Structured model proposal]
+    F --> N[Preserve local import bindings]
+    N --> G[Validate exact source edits]
+    G --> H[Offline Linux verification]
+    G -->|invalid; budget remains| E
+    H -->|fail; budget remains| E
+    H -->|budget exhausted| Y[Needs engineer]
+    H -->|pass and integrity intact| I[Bind evidence digest]
+    I --> J[Durable human review interrupt]
+    J -->|reject| R[Rejected]
+    J -->|approve exact digest| K[Recheck freshness and export]
+    K --> L[Optional allowlisted draft PR]
 ```
 
-## State and durability
+## Retrieval and model
 
-State includes the run ID, event history, baseline and regression results, source snapshot, protected-file hash, attempts, model usage, candidate repair, verification results, patch and evidence digest. SQLite checkpoints persist the review interrupt across process restart. Jobs are stored separately with idempotency keys. One worker processes the queue. Restart resumes queued interrupted jobs from checkpoints; each tool must tolerate replay. Full crash-injection coverage is still pending.
+Source chunks follow function/class boundaries and overlapping line windows, ranked against failure symbols and the dependency name. The final prompt includes small files whole, or at most two separated windows plus a module header for larger files. It bounds source characters and retains neighboring configuration files. An investigation node compares installed baseline and upgraded package documentation, exports and plugin inventories. It freezes that evidence before inference. Retrieval prioritizes direct dependency consumers. A generic normalization node preserves existing local bindings when an export becomes a named import; every resulting edit still passes the exact-anchor guard. This is task-directed code retrieval, not a document question-answering RAG pipeline.
 
-## Retrieval and preparation
+The hosted configuration uses Gemini (`gemini-3.1-pro-preview`), with Anthropic (`claude-sonnet-4-6`) as an explicitly selected alternative. Native structured-output adapters use the same closed repair schema and numbered source ranges. Gemini has an 8,192-token output ceiling; Anthropic 4,096. Retrieved source and API evidence are bounded before either call. Keys stay in environment configuration and never enter prompts or run reports. Ollama `qwen3:4b` remains optional, with an 8K fast context and 12K reasoning context on retries. There is no automatic cross-provider fallback. Provider availability is checked separately from actual repair correctness; only passing tests and unchanged protected files permit approval.
 
-This pilot uses bounded overlapping source windows (80 lines, stride 60), lexical ranking against failures and dependency references, and at most six chunks. Test files and test helpers are excluded from source context. The installed package's public API is supplied separately. This is **not** AST chunking, embedding retrieval or a trained reranker. Those are not implemented and should be compared against this baseline on harder cases before introduction.
-
-The first development case uses canonical verifier additions to expose a missing YAML regression test. Failure summaries are fed back to the model. Therefore this case is a development case and cannot be counted as an untouched held-out benchmark result. Gold solution files were not accessed. Other dataset tasks are metadata-only until qualified.
+Each failed attempt returns test examples, the previous proposal and guard feedback. Every new proposal edits the original upgraded source rather than accumulating uncontrolled changes. Invalid structured output consumes an attempt. Three attempts are the default; exhaustion produces `needs_engineer`, never fabricated success.
 
 ## Guardrails
 
-Input: fixed qualified case identifier; no caller-supplied shell commands or repository URLs; credential-free test environment; model treats source as untrusted data.
+- Before inference: registered revision/environment, bounded source inventory, obvious credential detection, passing baseline and reproducible failure.
+- Before applying: strict JSON schema, valid half-open source ranges, source allowlist, no test edits, traversal/symlink refusal, unique exact anchors, edit budget and detection of newly introduced shell/network/process/test-bypass constructs.
+- After applying: non-root offline read-only Linux test container; CPU, RAM, PID, file-size, log and wall-clock limits; nonempty passing test report; same baseline test count; exact upgraded dependency version; unchanged tests/manifests and installed dependency contents.
+- Before export: explicit reviewer approval of the evidence digest; recheck source inventory/content, protected files, dependency tree and case definition.
+- Before GitHub delivery: approved state, fresh evidence, repository allowlist, current default-branch SHA matching the case, deterministic branch and draft-only PR.
 
-Pre-execution: strict JSON schema; one atomic source edit per attempt; path allowlist; absolute paths, traversal, test edits, manifest edits, symlinks, nonexistent or ambiguous anchors and no-op edits rejected. Edits are validated before writing.
+These checks reduce specific risks; they are not a proof that arbitrary hostile code is safe. The worker belongs on a disposable dedicated VM. Source-pattern guards can be evaded by obfuscation; the model cannot grant itself more execution privileges.
 
-Execution: isolated copied workspace; network denied; reads restricted to the workspace and runtime directories; source writes denied; only temporary output and the known cache directory writable; process timeout and process-group kill. This macOS harness has not been audited as a hostile multi-tenant sandbox.
+## Dataset and evaluation policy
 
-Post-execution: nonzero test count; same test count as baseline; all tests pass; installed target version stays 4.0.0; protected files and source remain unchanged during tests. The model cannot self-certify a repair.
+DepBench metadata is pinned at `3eef955c222baa310ef039153755ec9d7cdb03f3`; GitHub source archives are pinned by commit and SHA-256. Four MIT-licensed upstream cases cover js-yaml, Terser, lru-cache and SVGO. Lockfiles are committed under `bootstrap/` for reconstruction. Reference solution files are never downloaded or supplied to the model.
 
-Output: diff and verification report are hashed together; review resumes only against that digest; source/protected-file freshness is rechecked at export; artifact is read back. There is no automatic merge, network execution or deployment.
+The v8r canonical test additions were used during development and are not held out. The other cases use original upstream tests for repair; separate verifier additions may be run only after a candidate is frozen and must be reported separately. All test environments use a common pinned Linux Node 18 image, an adaptation of the historical benchmark environments. No official DepBench score or broad repair success rate is claimed.
 
-## Failure handling
-
-Bad baseline or absent prepared data blocks the run. Invalid model edits receive bounded feedback. At most two proposal attempts occur. Each attempt restores the original upgraded source. Model/network failures are surfaced rather than replaced by a fabricated patch. Exhausted retries and integrity failures route to engineer escalation.
-
-## Next technical work
-
-Generalize task adapters and dependency evidence beyond js-yaml; validate behavior with held-out cases across ecosystems; add durable per-attempt token accounting and cancellation; bind approvals to complete environment/dependency digests; move execution into independent disposable workers before accepting customer repositories.
+Operator-prepared canonical test migrations are fixed inputs, protected from model edits and included in reviewed exports. LRU runtime tests and `tsd` must both pass. Final artifacts are checked by applying them to pristine pinned source archives; see VALIDATION.md.

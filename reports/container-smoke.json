@@ -1,0 +1,31 @@
+{
+  "worker_docker_health": true,
+  "production_api_startup": true,
+  "unauthenticated_request_refused": true,
+  "registered_cases_visible": true,
+  "operator_cannot_approve": true,
+  "reviewer_cannot_execute": true,
+  "secure_login_cookie": true,
+  "remote_baseline_execution": {
+    "exit_code": 0,
+    "timed_out": false,
+    "seconds": 0.93,
+    "tests": 20,
+    "passes": 20,
+    "failures": [],
+    "ok": true,
+    "infrastructure_error": false,
+    "isolation": "Docker: no network, read-only source, non-root, no capabilities, CPU/memory/PID limits",
+    "image": "node:18-bullseye@sha256:0d9e9a8dcd5a83ea737ed92227a6591a31ad70c8bb722b0c51aff7ae23a88b6a",
+    "additional_checks": [],
+    "snapshot_digest": "73c3aced04e310ca1d8cef22cd6f4852df92226a83fabbd8d189e1a9e2d3340e",
+    "snapshot_unchanged": true
+  },
+  "api_has_no_docker_socket": true,
+  "readyz": {
+    "cases_ready": 4,
+    "model_ready": true,
+    "executor_ready": true,
+    "ready": true
+  }
+}

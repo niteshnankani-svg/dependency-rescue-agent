@@ -1,0 +1,38 @@
+{
+  "run_id": "7bf305f026684a6eb6d68465f76d266a",
+  "case_id": "get-jwks-lru",
+  "status": "blocked",
+  "baseline": {
+    "exit_code": 1,
+    "timed_out": false,
+    "seconds": 0.24,
+    "tests": 0,
+    "passes": 0,
+    "failures": [
+      {
+        "message": "Failed to initialize: unable to resolve docker endpoint: context \"colima-rescue\": context not found: open /Users/apple/.docker/contexts/meta/93691a7808dedcf9f6323e15ed86fba347ebda5afba162141aca9279747c1e62/meta.json: no such file or directory\n"
+      }
+    ],
+    "ok": false,
+    "infrastructure_error": false,
+    "isolation": "Docker: no network, read-only source, non-root, no capabilities, CPU/memory/PID limits",
+    "image": "node:18-bullseye@sha256:0d9e9a8dcd5a83ea737ed92227a6591a31ad70c8bb722b0c51aff7ae23a88b6a"
+  },
+  "broken": null,
+  "verification": null,
+  "attempts": 0,
+  "model_calls": [],
+  "events": [
+    {
+      "node": "intake",
+      "detail": "Pinned nearform/get-jwks@d3d40dd801bd; isolated workspace created"
+    },
+    {
+      "node": "baseline",
+      "detail": "0/0 baseline tests passed"
+    }
+  ],
+  "error": null,
+  "reference_solution_accessed": false,
+  "independent_verifier": "not yet run"
+}

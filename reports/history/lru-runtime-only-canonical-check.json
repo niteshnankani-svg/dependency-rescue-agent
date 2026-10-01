@@ -1,0 +1,15 @@
+{
+  "exit_code": 0,
+  "timed_out": false,
+  "seconds": 3.43,
+  "tests": 73,
+  "passes": 73,
+  "failures": [],
+  "ok": true,
+  "infrastructure_error": false,
+  "isolation": "Docker: no network, read-only source, non-root, no capabilities, CPU/memory/PID limits",
+  "image": "node:18-bullseye@sha256:0d9e9a8dcd5a83ea737ed92227a6591a31ad70c8bb722b0c51aff7ae23a88b6a",
+  "run_id": "da0f9712fb9c497fbfab00addd6872fe",
+  "case_id": "get-jwks-lru",
+  "scope": "Canonical verifier test patch, adapted Linux Node18 execution; no feedback to repair model. See test_state.py for any additional commands not covered."
+}

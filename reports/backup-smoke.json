@@ -1,0 +1,13 @@
+{
+  "scope": "SQLite backup/readback; workspace restore is a deployment operation",
+  "databases": {
+    "jobs.sqlite": {
+      "integrity": "ok",
+      "row_counts_match": true
+    },
+    "checkpoints.sqlite": {
+      "integrity": "ok",
+      "row_counts_match": true
+    }
+  }
+}

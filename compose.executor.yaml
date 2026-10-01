@@ -1,0 +1,25 @@
+# Run on a separate dedicated worker VM. Do not combine with the API host in production.
+services:
+  executor:
+    build:
+      context: .
+      target: executor
+    restart: unless-stopped
+    ports: ["127.0.0.1:8094:8094"]
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs: ["/tmp:size=64m"]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${RESCUE_DATA_ROOT:?Set prepared data directory}:/data:ro
+      - ${RESCUE_WORKSPACE_ROOT:?Set absolute disposable workspace directory}:${RESCUE_WORKSPACE_ROOT}
+    environment:
+      RESCUE_DATA_ROOT: /data
+      RESCUE_WORKSPACE_ROOT: ${RESCUE_WORKSPACE_ROOT}
+      RESCUE_EXECUTOR_TOKEN: ${RESCUE_EXECUTOR_TOKEN:?Set executor token}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8094/healthz',timeout=2)"]
+      interval: 30s
+      timeout: 3s
+      retries: 3

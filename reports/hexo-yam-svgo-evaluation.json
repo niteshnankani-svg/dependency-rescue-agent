@@ -1,0 +1,128 @@
+{
+  "run_id": "104c0b964a0d4de48f7fd0264f4f1bad",
+  "case_id": "hexo-yam-svgo",
+  "status": "awaiting_approval",
+  "baseline": {
+    "exit_code": 0,
+    "timed_out": false,
+    "seconds": 6.78,
+    "tests": 92,
+    "passes": 92,
+    "failures": [],
+    "ok": true,
+    "infrastructure_error": false,
+    "isolation": "Docker: no network, read-only source, non-root, no capabilities, CPU/memory/PID limits",
+    "image": "node:18-bullseye@sha256:0d9e9a8dcd5a83ea737ed92227a6591a31ad70c8bb722b0c51aff7ae23a88b6a",
+    "additional_checks": []
+  },
+  "broken": {
+    "exit_code": 1,
+    "timed_out": false,
+    "seconds": 13.86,
+    "tests": 92,
+    "passes": 91,
+    "failures": [
+      {
+        "title": "svg invalid svg",
+        "message": "SvgoParserError: <input>:1:1: Non-whitespace before first tag.\n    at SAXParser.sax.onerror (/app/node_modules/svgo/lib/parser.js:247:19)\n    at emit (/app/node_modules/@trysound/sax/lib/sax.js:518:35)\n    at error (/app/node_modules/@trysound/sax/lib/sax.js:549:5)\n    at strictFail (/app/node_modules/@trysound/sax/lib/sax.js:573:7)\n    at beginWhiteSpace (/app/node_modules/@trysound/sax/lib/sax.js:847:7)\n    at SAXParser.write (/app/node_modules/@trysound/sax/lib/sax.js:902:11)\n    at parseSvg (/app/node_modules/svgo/lib/parser.js:259:7)\n    at optimize (/app/node_modules/svgo/lib/svgo.js:66:17)\n    at optimize (/app/node_modules/svgo/lib/svgo-node.js:76:10)\n    at RouteStream.svgOptimize (/app/lib/filter.js:155:35)\n    at RouteStream.emit (node:events:517:28)\n    at endReadableNT (node:internal/streams/readable:1400:12)\n    at processTicksAndRejections (node:internal/process/task_queues:82:21)\nError: thrown: \"Exceeded timeout of 5000 ms for a test.\nAdd a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.\"\n    at test (/app/test/svg.test.js:116:3)\n    at _dispatchDescribe (/app/node_modules/jest-circus/build/index.js:91:26)\n    at describe (/app/node_modules/jest-circus/build/index.js:55:5)\n    at Object.describe (/app/test/svg.test.js:7:1)\n    at Runtime._execModule (/app/node_modules/jest-runtime/build/index.js:1439:24)\n    at Runtime._loadModule (/app/node_modules/jest-runtime/build/index.js:1022:12)\n    at Runtime.requireModule (/app/node_modules/jest-runtime/build/index.js:882:12)\n    at jestAdapter (/app/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:77:13)\n    at runTestInternal (/app/node_modules/jest-runner/build/runTest.js:367:16)\n    at runTest (/app/node_modules/jest-runner/build/runTest.js:444:34)"
+      }
+    ],
+    "ok": false,
+    "infrastructure_error": false,
+    "isolation": "Docker: no network, read-only source, non-root, no capabilities, CPU/memory/PID limits",
+    "image": "node:18-bullseye@sha256:0d9e9a8dcd5a83ea737ed92227a6591a31ad70c8bb722b0c51aff7ae23a88b6a",
+    "additional_checks": []
+  },
+  "verification": {
+    "exit_code": 0,
+    "timed_out": false,
+    "seconds": 7.62,
+    "tests": 92,
+    "passes": 92,
+    "failures": [],
+    "ok": true,
+    "infrastructure_error": false,
+    "isolation": "Docker: no network, read-only source, non-root, no capabilities, CPU/memory/PID limits",
+    "image": "node:18-bullseye@sha256:0d9e9a8dcd5a83ea737ed92227a6591a31ad70c8bb722b0c51aff7ae23a88b6a",
+    "additional_checks": [],
+    "integrity_ok": true,
+    "dependency_version": "3.0.0"
+  },
+  "attempts": 1,
+  "model_calls": [
+    {
+      "model": "gemini-3.1-pro-preview",
+      "provider": "gemini",
+      "attempt": 1,
+      "thinking_enabled": false,
+      "chunks": [
+        {
+          "path": "lib/filter.js",
+          "line": 83,
+          "score": 25
+        },
+        {
+          "path": "lib/filter.js",
+          "line": 1,
+          "score": 22
+        },
+        {
+          "path": "index.js",
+          "line": 1,
+          "score": 8
+        }
+      ],
+      "input_tokens": 6163,
+      "output_tokens": 258,
+      "reasoning_tokens": 5687,
+      "finish_reason": "STOP",
+      "valid": true
+    }
+  ],
+  "events": [
+    {
+      "node": "intake",
+      "detail": "Pinned curbengh/hexo-yam@4b4d3cb342dd; isolated workspace created"
+    },
+    {
+      "node": "baseline",
+      "detail": "92/92 baseline tests passed"
+    },
+    {
+      "node": "upgrade",
+      "detail": "Applied pinned upgrade to svgo 3.0.0"
+    },
+    {
+      "node": "reproduce",
+      "detail": "1 failures; regression reproduced=True"
+    },
+    {
+      "node": "investigate",
+      "detail": "Compared original and upgraded package APIs; retrieved 3 bounded evidence sections"
+    },
+    {
+      "node": "diagnose",
+      "detail": "Model proposed a structured source repair"
+    },
+    {
+      "node": "normalize",
+      "detail": "Candidate needs no import binding normalization"
+    },
+    {
+      "node": "apply",
+      "detail": "Validated exact-match source edits: lib/filter.js"
+    },
+    {
+      "node": "verify",
+      "detail": "92/92 tests passed; integrity=True"
+    },
+    {
+      "node": "evidence",
+      "detail": "Diff, target version, test counts and integrity bound to an approval digest"
+    }
+  ],
+  "error": "",
+  "reference_solution_accessed": false,
+  "independent_verifier": "Development tests; canonical API-contract migrations are operator supplied, not held out",
+  "artifact_applies_to_pristine_base": true
+}
