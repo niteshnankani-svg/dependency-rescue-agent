@@ -99,3 +99,18 @@ def test_judge_outage_is_inconclusive_not_a_verdict():
     assert not result.failed, report(result)
     assert any(c.skipped and 'inconclusive' in c.tags for c in result.checks)
     assert 'judge.accuracy' not in result.metrics
+
+
+@needs_node
+def test_judge_calibration_does_not_leak_global_state():
+    import os
+    from rescue import config
+    from evals import judge as J
+    import httpx
+    from evals.suite_judge import Mock
+    before = (config.DATA, os.environ.get('RESCUE_CASES_FILE'), httpx.Client)
+    judge = J.Judge(provider='gemini', key='k' * 24)
+    judge.retries, judge.backoff = 0, 0
+    with Mock(lambda request, n: httpx.Response(503, json={})):
+        suite_judge.run(judge=judge, workers=4)
+    assert (config.DATA, os.environ.get('RESCUE_CASES_FILE'), httpx.Client) == before

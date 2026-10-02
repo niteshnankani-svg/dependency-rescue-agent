@@ -182,10 +182,13 @@ def reference_for(row):
 def live(rec, enriched, judge, samples=1, workers=4):
     fixtures_by = fixtures.BY_ID
 
+    # Sandbox mutates process-wide state (config.DATA, env), so it must never be entered from worker threads.
+    for fixture in fixtures.FIXTURES:
+        _before(fixture)
+
     def grade(row):
         f = fixtures_by[row['fixture']]
-        # Failing tests before the repair are identical for every candidate of a fixture.
-        before = _before(f)
+        before = _before(f)  # cached: identical for every candidate of a fixture
         try:
             return row, judge.grade(reference_for(row), f.sources, before, row['verification'], row['diagnosis'], row['diff'], samples=samples), None
         except J.JudgeError as exc:
