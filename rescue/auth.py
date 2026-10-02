@@ -4,14 +4,33 @@ import json
 import os
 from functools import lru_cache
 from fastapi import HTTPException
+import httpx
+import jwt
+from jwt.exceptions import PyJWKClientConnectionError
 
 
-@lru_cache(maxsize=1)
+class VerifiedJWKClient(jwt.PyJWKClient):
+    """Use the app's CA-verified HTTPS transport instead of platform urllib CAs."""
+    def fetch_data(self):
+        try:
+            with httpx.Client(timeout=5,trust_env=False) as client:
+                response=client.get(self.uri)
+                response.raise_for_status()
+                if len(response.content)>1_000_000:raise ValueError('Oversized signing-key response')
+                data=response.json()
+                if not isinstance(data,dict) or not isinstance(data.get('keys'),list):raise ValueError('Invalid signing-key response')
+        except (httpx.HTTPError,ValueError) as error:
+            raise PyJWKClientConnectionError('Unable to retrieve verified signing keys') from None
+        if self.jwk_set_cache is not None:self.jwk_set_cache.put(data)
+        return data
+
+
+@lru_cache(maxsize=4)
 def jwks_client(url):
     from jwt import PyJWKClient
     if not url.startswith('https://'):
         raise RuntimeError('JWKS URL must use HTTPS')
-    return PyJWKClient(url,cache_keys=True,timeout=5)
+    return VerifiedJWKClient(url,cache_keys=True,timeout=5)
 
 
 def verify(token,local_token):
