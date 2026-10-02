@@ -84,7 +84,7 @@ def intake(s):
 
 def baseline(s):
     result=run_tests(workspace(s),case=case(s),phase='baseline')
-    return {'baseline':result,'status':'running' if result['ok'] else 'blocked',**event('baseline',f"{result['passes']}/{result['tests']} baseline tests passed")}
+    return {'baseline':result,'status':'running' if result['ok'] else 'blocked','error':None if result['ok'] else 'Original repository tests do not pass in this environment. Resolve baseline failures or configure a compatible runner before attempting an upgrade.',**event('baseline',f"{result['passes']}/{result['tests']} baseline tests passed")}
 
 
 def upgrade(s):

@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-02",
+  "github_connected": true,
+  "accessible_repository_count": 29,
+  "mcp_read_verified": true,
+  "imported_repository": "sinonjs/nise",
+  "commit": "a03756aeacf42608a720478da5b843ee3c81f18c",
+  "preparation": "ready",
+  "run_id": "a993ebb9aa18408fb2ddbbaa04ca77ad",
+  "baseline": {
+    "tests": 371,
+    "passes": 363,
+    "status": "blocked",
+    "reason": "Original tests require browser globals FormData and FileReader"
+  },
+  "repair_generated": false,
+  "python_tests": 116,
+  "frontend_tests": 3,
+  "mobile_document_width": 390,
+  "mobile_viewport_width": 390
+}

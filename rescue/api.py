@@ -84,6 +84,7 @@ def worker():
 @contextlib.asynccontextmanager
 async def lifespan(app):
     validate_production()
+    onboarding.recover_interrupted()
     STOP.clear()
     t=threading.Thread(target=worker,daemon=True)
     t.start()
@@ -323,3 +324,39 @@ def patch(run_id:str):
 
 
 app.mount('/static',StaticFiles(directory=ROOT/'rescue/static'),name='static')
+
+
+# Repository onboarding is operator-only; neither browser nor model supplies commands.
+from . import onboarding
+from .github_connection import GitHub
+
+@app.get('/api/github/repositories')
+def github_repositories(actor=Depends(authorize)):
+    require(actor,'operator')
+    github=GitHub()
+    try:return {'connected':bool(github.token),'repositories':github.repositories(),'limit':100}
+    except Exception:raise HTTPException(502,'GitHub connection unavailable. Check server authentication and repository permissions.') from None
+    finally:github.close()
+
+@app.post('/api/github/inspect')
+def github_inspect(body:onboarding.Inspect,actor=Depends(authorize)):
+    require(actor,'operator')
+    try:
+        value=onboarding.inspect(body,actor['id']);audit(actor,'inspect_repository',value['id']);return value
+    except ValueError as error:raise HTTPException(422,str(error)) from None
+    except Exception:raise HTTPException(502,'GitHub inspection failed. Check server authentication and connectivity.') from None
+
+@app.post('/api/github/prepare',status_code=202)
+def github_prepare(body:onboarding.Prepare,actor=Depends(authorize)):
+    require(actor,'operator')
+    try:
+        value=onboarding.prepare(body,actor['id']);audit(actor,'prepare_repository',value['id']);return value
+    except ValueError as error:raise HTTPException(422,str(error)) from None
+
+@app.get('/api/github/inspections/{inspection_id}')
+def github_inspection(inspection_id:str,actor=Depends(authorize)):
+    require(actor,'operator')
+    try:value=onboarding.read(inspection_id)
+    except ValueError as error:raise HTTPException(404,str(error)) from None
+    if value['actor']!=actor['id']:raise HTTPException(403,'Inspection belongs to another operator')
+    return value

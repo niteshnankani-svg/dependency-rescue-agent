@@ -51,3 +51,7 @@ The v8r canonical test additions were used during development and are not held o
 Operator-prepared canonical test migrations are fixed inputs, protected from model edits and included in reviewed exports. LRU runtime tests and `tsd` must both pass. Final artifacts are checked by applying them to pristine pinned source archives; see VALIDATION.md.
 
 Security policy violations stop model processing and record a safe reason in the trace. Dependency documentation is screened before checkpoint persistence; all outbound model evidence and returned proposals are screened. Export rechecks stored edits against the current capability policy. Source/docs/logs cannot grant tools, authority or approval. See SECURITY.md for the heuristic detectors and deterministic execution boundaries.
+
+### Repository intake boundary
+
+`github_connection.py` owns server-side GitHub credentials and fixed read-only MCP dispatch. `onboarding.py` validates manifests, archive paths, test profiles and registry downloads, prepares snapshots without lifecycle scripts, and registers an immutable case. The model cannot select a GitHub tool, credential, endpoint, shell command, or runner profile. Baseline failure stops the graph before repair. Imported cases retain existing bounded edits, isolated verification and digest-bound human approval.

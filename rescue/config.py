@@ -72,6 +72,8 @@ class Case(BaseModel):
 def cases():
     path=Path(os.getenv('RESCUE_CASES_FILE',str(ROOT/'cases.json')))
     values=[Case.model_validate(c) for c in json.loads(path.read_text())]
+    imported=DATA/'imports/registry.json'
+    if imported.exists():values += [Case.model_validate(c) for c in json.loads(imported.read_text())]
     if len({c.id for c in values})!=len(values):
         raise ValueError('Duplicate case identifiers')
     return {c.id:c for c in values}

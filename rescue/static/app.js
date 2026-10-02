@@ -6,7 +6,7 @@ let lastHealth = 0, pendingDecision = null, auditVersion = 0;
 const labels = {awaiting_approval:'Awaiting review',completed:'Exported',needs_engineer:'Needs engineer',blocked:'Blocked',queued:'Queued',running:'Running',cancelled:'Cancelled',rejected:'Rejected',retry:'Retrying',approved:'Exporting'};
 function notice(message, error = false) { $('notice').textContent = message; $('notice').dataset.error = String(error); }
 async function api(path, options = {}) {
-  const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 20000);
+  const controller = new AbortController(), timer = setTimeout(() => controller.abort(), options.timeout || 20000);
   try {
     const requestOptions = {...options, signal:controller.signal, headers:{'Content-Type':'application/json',...options.headers}};
     let response = await fetch(path, requestOptions);
@@ -100,7 +100,8 @@ function render(state) {
   $('approve').disabled = deciding || !state.case_digest; $('reject').disabled = deciding;
   $('download').hidden = state.status !== 'completed'; $('download').href = `/api/runs/${state.run_id}/patch`;
   $('cancel').hidden = !['queued','running','awaiting_approval'].includes(state.status);
-  $('failure').textContent = state.error || (state.status === 'awaiting_approval' && !state.case_digest ? 'This older run lacks current integrity evidence. Start a fresh repair before export.' : '');
+  const baselineFailure = state.baseline && !state.baseline.ok ? 'Baseline failed before any upgrade. ' + (state.baseline.failures || []).slice(0,3).map(f => f.message || f.title).join(' · ') : '';
+  $('failure').textContent = baselineFailure || state.error || (state.status === 'awaiting_approval' && !state.case_digest ? 'This older run lacks current integrity evidence. Start a fresh repair before export.' : '');
 }
 async function health() {
   if (Date.now() - lastHealth < 30000) return;
@@ -191,4 +192,34 @@ $('login').addEventListener('submit',async event => {
   catch (error) { notice(error.message,true); }
 });
 async function poll() { if (!document.hidden) { await refresh(); health(); } setTimeout(poll,5000); }
-(async () => { if (document.body.dataset.hosted === 'standalone') { $('hosting-note').hidden=false; $('search').disabled=true; $('filter').disabled=true; $('connection-text').textContent='Backend not connected'; $('connection').dataset.state='error'; $('case').replaceChildren(node('option','Backend connection required')); $('repository').textContent='Connect a hosted API to load workflows'; $('runs').replaceChildren(node('p','No backend connected. Your runs will appear here after setup.','list-empty')); const docsLink=document.querySelector('a[href="/docs"]'); docsLink.href='https://github.com/niteshnankani-svg/dependency-rescue-agent'; docsLink.textContent='Project documentation ↗'; return; } try { await loadCases(); await refresh(); } catch (error) { notice(error.message,true); } health(); setTimeout(poll,5000); })();
+(async () => { if (document.body.dataset.hosted === 'standalone') { $('github-connect').disabled=true; $('github-inspect-button').disabled=true; $('github-connection').textContent='Connect a hosted backend to enable GitHub onboarding.'; $('hosting-note').hidden=false; $('search').disabled=true; $('filter').disabled=true; $('connection-text').textContent='Backend not connected'; $('connection').dataset.state='error'; $('case').replaceChildren(node('option','Backend connection required')); $('repository').textContent='Connect a hosted API to load workflows'; $('runs').replaceChildren(node('p','No backend connected. Your runs will appear here after setup.','list-empty')); const docsLink=document.querySelector('a[href="/docs"]'); docsLink.href='https://github.com/niteshnankani-svg/dependency-rescue-agent'; docsLink.textContent='Project documentation ↗'; return; } try { await loadCases(); await refresh(); } catch (error) { notice(error.message,true); } health(); setTimeout(poll,5000); })();
+
+
+let githubInspection = null, githubBusy = false;
+function githubMessage(text,error=false) { $('github-progress').textContent=text; $('github-progress').dataset.error=String(error); }
+$('github-connect').onclick=async()=>{
+  $('github-connect').disabled=true;
+  try { const result=await api('/api/github/repositories'); $('github-repositories').replaceChildren(...result.repositories.map(r=>{const option=node('option',r.repository);option.value=r.repository;return option;})); $('github-connection').textContent=result.connected?`Connected. ${result.repositories.length} repositories loaded (up to 100). Choose one or enter another accessible repository.`:'No authenticated account configured. Public repositories can be inspected with MCP unchecked. Ask your administrator to configure a GitHub App for private access.'; }
+  catch(error){githubMessage(error.message,true);} finally{$('github-connect').disabled=false;}
+};
+$('github-inspect').onsubmit=async event=>{
+  event.preventDefault();if(githubBusy)return;githubBusy=true;$('github-inspect-button').disabled=true;$('github-prepare').hidden=true;githubInspection=null;
+  githubMessage('Resolving an immutable commit and checking npm/test compatibility…');
+  try { githubInspection=await api('/api/github/inspect',{method:'POST',body:JSON.stringify({repository:$('github-repo').value.trim(),ref:$('github-ref').value.trim(),use_mcp:$('github-mcp').checked}),timeout:90000});
+    $('github-summary').textContent=`${githubInspection.repository} · ${githubInspection.commit.slice(0,12)} · ${githubInspection.reporter} · ${githubInspection.mcp?'MCP read verified':'GitHub API inspection'}`;
+    $('github-dependency').replaceChildren(...Object.entries(githubInspection.dependencies).map(([name,version])=>{const option=node('option',`${name} (${version})`);option.value=name;return option;}));
+    $('github-prepare-button').disabled=false;$('github-prepare').hidden=false;githubMessage(githubInspection.message);
+  }catch(error){githubMessage(error.message,true);}finally{githubBusy=false;$('github-inspect-button').disabled=false;}
+};
+$('github-prepare').onsubmit=async event=>{
+  event.preventDefault();if(!githubInspection||githubBusy)return;githubBusy=true;$('github-prepare-button').disabled=true;$('github-inspect-button').disabled=true;
+  try {const value=await api('/api/github/prepare',{method:'POST',body:JSON.stringify({inspection_id:githubInspection.id,dependency:$('github-dependency').value,target_version:$('github-target').value.trim()})});githubMessage(value.message);pollPreparation(value.id);}
+  catch(error){githubMessage(error.message,true);githubBusy=false;$('github-prepare-button').disabled=false;$('github-inspect-button').disabled=false;}
+};
+async function pollPreparation(id){
+  try {const value=await api('/api/github/inspections/'+id);githubMessage(value.message,value.status==='failed');
+    if(value.status==='preparing'){setTimeout(()=>pollPreparation(id),3000);return;}
+    if(value.status==='ready'){await loadCases();$('case').value=value.case_id;showCase();githubMessage('Repository ready. Your imported workflow is selected below—click Run repair to begin baseline verification.');}
+    githubBusy=false;$('github-prepare').hidden=true;$('github-inspect-button').disabled=false;
+  }catch(error){githubMessage(error.message+' Preparation may still be running. Reload workflows after reconnecting.',true);githubBusy=false;$('github-inspect-button').disabled=false;}
+}

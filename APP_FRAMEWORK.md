@@ -42,3 +42,7 @@ Source credential detection is heuristic and does not replace repository secret 
 ## Test contracts and export
 
 Operator-approved version-specific test migrations are stored in `bootstrap/<case>/test-migration.patch`; models cannot change them. They are protected during verification and included in exported patches. Original source manifests are preserved in `bootstrap/<case>/base` so exports apply to the pinned upstream revision, including any required test dependencies. `scripts/qualify_artifacts.py` checks patch application and byte equality against verified files. Additional registered commands such as `tsd` must pass as well as the runtime test suite.
+
+### GitHub onboarding extension
+
+The local dashboard now lists accessible GitHub repositories, inspects a pinned commit through read-only GitHub MCP, and prepares immutable npm environments. Operator-only endpoints under `/api/github/` feed dynamically registered cases into the same repair graph. See `GITHUB_ONBOARDING.md` for supported test profiles and the explicit local-only preparation restriction. This does not supply multi-tenant OAuth or a hosted backend.

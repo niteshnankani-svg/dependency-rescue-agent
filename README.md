@@ -69,3 +69,7 @@ The responsive repair workspace includes live service readiness, recent-run tota
 This is a single-organization, single-API-process deployment. It is not a multi-tenant arbitrary-code platform. Docker shares its worker host kernel; deploy the executor on a disposable dedicated VM. Cloud deployment, real organization SSO and customer GitHub App credentials must be configured by the deploying organization. No external repository was modified during evaluation.
 
 For a constrained development Mac with a dedicated `rescue` Colima profile, set `RESCUE_SERIAL_COLIMA=rescue` and `RESCUE_DOCKER_CONTEXT=colima-rescue` on the API. The scheduler stops only that explicitly selected worker during local inference and restores it before verification. This option refuses production; deploy model and worker separately there. Historical `scripts/setup_case.py` and `scripts/summarize_validation.py` describe the original pilot; use the Linux setup and evaluation commands above for this release.
+
+## Connect a GitHub repository
+
+The local Docker app now includes GitHub MCP inspection and bounded npm repository preparation. See [GITHUB_ONBOARDING.md](GITHUB_ONBOARDING.md) for the workflow, connection settings, supported projects, and production limits.
