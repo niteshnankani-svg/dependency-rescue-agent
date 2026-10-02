@@ -1,0 +1,6 @@
+# Install into a separate venv; RAGAS pins differ from the application lock.
+ragas==0.3.9
+langchain-google-genai<3
+langchain-community<0.4
+httpx
+pydantic

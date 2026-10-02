@@ -1,0 +1,719 @@
+{
+  "overall": "INCOMPLETE",
+  "failed": [],
+  "skipped": [
+    "judge_calibration",
+    "judge_live_repairs",
+    "ragas_live_repairs"
+  ],
+  "judge_model": "gemini-2.5-pro",
+  "sections": {
+    "unit_tests": {
+      "status": "passed",
+      "passed": 165,
+      "summary": "165 passed, 1 warning in 1.90s"
+    },
+    "deterministic": {
+      "status": "passed",
+      "passed": true,
+      "summary": {
+        "cases": 4,
+        "cases_passed_all_checks": 4,
+        "repair_success_rate": 1.0,
+        "first_attempt_success_rate": 0.75,
+        "mean_attempts": 1.25,
+        "total_input_tokens": 22108,
+        "total_output_tokens": 1188,
+        "system_checks_passed": 5,
+        "system_checks": 5
+      },
+      "cases": [
+        {
+          "case_id": "get-jwks-lru",
+          "status": "awaiting_approval",
+          "first_attempt_success": true,
+          "attempts": 1,
+          "usage": {
+            "model_calls": 1,
+            "invalid_outputs": 0,
+            "input_tokens": 4139,
+            "output_tokens": 250,
+            "models": [
+              "gemini-3.1-pro-preview"
+            ]
+          },
+          "checks": [
+            {
+              "check": "baseline_green",
+              "passed": true,
+              "observed": "73/73"
+            },
+            {
+              "check": "regression_reproduced",
+              "passed": true,
+              "observed": "0/51 passing, 52 failures"
+            },
+            {
+              "check": "repair_verified",
+              "passed": true,
+              "observed": "73/73"
+            },
+            {
+              "check": "additional_checks_green",
+              "passed": true,
+              "observed": 1
+            },
+            {
+              "check": "integrity_preserved",
+              "passed": true,
+              "observed": true
+            },
+            {
+              "check": "dependency_at_target",
+              "passed": true,
+              "observed": "9.0.0"
+            },
+            {
+              "check": "within_attempt_budget",
+              "passed": true,
+              "observed": 1
+            },
+            {
+              "check": "no_reference_solution",
+              "passed": true,
+              "observed": false
+            },
+            {
+              "check": "artifact_applies_to_pristine_base",
+              "passed": true,
+              "observed": {
+                "report": true,
+                "qualification": true
+              }
+            },
+            {
+              "check": "independent_verifier_matches",
+              "passed": true,
+              "observed": {
+                "case_id": "get-jwks-lru",
+                "run_id": "744392a157834d41bcf3740d9b2371d2",
+                "tests_passed": 73,
+                "additional_checks_passed": true,
+                "patch_applies_to_pristine_base": true,
+                "patched_files_equal_verified_files": true
+              }
+            },
+            {
+              "check": "security_policies_replay",
+              "passed": true,
+              "observed": {
+                "case_id": "get-jwks-lru",
+                "input_guard_passed": true,
+                "output_guard_passed": true,
+                "patch_policy_passed": true,
+                "original_review_unchanged": true
+              }
+            },
+            {
+              "check": "prefix_order",
+              "passed": true,
+              "observed": [
+                "intake",
+                "baseline",
+                "upgrade",
+                "reproduce",
+                "investigate"
+              ]
+            },
+            {
+              "check": "verify_before_evidence",
+              "passed": true,
+              "observed": [
+                "intake",
+                "baseline",
+                "upgrade",
+                "reproduce",
+                "investigate",
+                "diagnose",
+                "normalize",
+                "apply",
+                "verify",
+                "evidence"
+              ]
+            },
+            {
+              "check": "ends_at_human_gate",
+              "passed": true,
+              "observed": "evidence"
+            },
+            {
+              "check": "no_export_without_approval",
+              "passed": true,
+              "observed": [
+                "intake",
+                "baseline",
+                "upgrade",
+                "reproduce",
+                "investigate",
+                "diagnose",
+                "normalize",
+                "apply",
+                "verify",
+                "evidence"
+              ]
+            },
+            {
+              "check": "apply_precedes_verify",
+              "passed": true,
+              "observed": [
+                "intake",
+                "baseline",
+                "upgrade",
+                "reproduce",
+                "investigate",
+                "diagnose",
+                "normalize",
+                "apply",
+                "verify",
+                "evidence"
+              ]
+            }
+          ],
+          "passed": true,
+          "note": "independent_verifier field in the raw evaluation report reads: Development tests; canonical API-contract migrations are operator supplied, not held out; verified separately via artifact-qualification.json"
+        },
+        {
+          "case_id": "hexo-uglify-terser",
+          "status": "awaiting_approval",
+          "first_attempt_success": false,
+          "attempts": 2,
+          "usage": {
+            "model_calls": 2,
+            "invalid_outputs": 1,
+            "input_tokens": 5698,
+            "output_tokens": 531,
+            "models": [
+              "gemini-3.1-pro-preview"
+            ]
+          },
+          "checks": [
+            {
+              "check": "baseline_green",
+              "passed": true,
+              "observed": "6/6"
+            },
+            {
+              "check": "regression_reproduced",
+              "passed": true,
+              "observed": "3/6 passing, 3 failures"
+            },
+            {
+              "check": "repair_verified",
+              "passed": true,
+              "observed": "6/6"
+            },
+            {
+              "check": "additional_checks_green",
+              "passed": true,
+              "observed": 0
+            },
+            {
+              "check": "integrity_preserved",
+              "passed": true,
+              "observed": true
+            },
+            {
+              "check": "dependency_at_target",
+              "passed": true,
+              "observed": "5.3.0"
+            },
+            {
+              "check": "within_attempt_budget",
+              "passed": true,
+              "observed": 2
+            },
+            {
+              "check": "no_reference_solution",
+              "passed": true,
+              "observed": false
+            },
+            {
+              "check": "artifact_applies_to_pristine_base",
+              "passed": true,
+              "observed": {
+                "report": true,
+                "qualification": true
+              }
+            },
+            {
+              "check": "independent_verifier_matches",
+              "passed": true,
+              "observed": {
+                "case_id": "hexo-uglify-terser",
+                "run_id": "1b3f31eaaaab4c519d47d9519bcfc05e",
+                "tests_passed": 6,
+                "additional_checks_passed": true,
+                "patch_applies_to_pristine_base": true,
+                "patched_files_equal_verified_files": true
+              }
+            },
+            {
+              "check": "security_policies_replay",
+              "passed": true,
+              "observed": {
+                "case_id": "hexo-uglify-terser",
+                "input_guard_passed": true,
+                "output_guard_passed": true,
+                "patch_policy_passed": true,
+                "original_review_unchanged": true
+              }
+            },
+            {
+              "check": "prefix_order",
+              "passed": true,
+              "observed": [
+                "intake",
+                "baseline",
+                "upgrade",
+                "reproduce",
+                "investigate"
+              ]
+            },
+            {
+              "check": "verify_before_evidence",
+              "passed": true,
+              "observed": [
+                "intake",
+                "baseline",
+                "upgrade",
+                "reproduce",
+                "investigate",
+                "diagnose",
+                "diagnose",
+                "normalize",
+                "apply",
+                "verify",
+                "evidence"
+              ]
+            },
+            {
+              "check": "ends_at_human_gate",
+              "passed": true,
+              "observed": "evidence"
+            },
+            {
+              "check": "no_export_without_approval",
+              "passed": true,
+              "observed": [
+                "intake",
+                "baseline",
+                "upgrade",
+                "reproduce",
+                "investigate",
+                "diagnose",
+                "diagnose",
+                "normalize",
+                "apply",
+                "verify",
+                "evidence"
+              ]
+            },
+            {
+              "check": "apply_precedes_verify",
+              "passed": true,
+              "observed": [
+                "intake",
+                "baseline",
+                "upgrade",
+                "reproduce",
+                "investigate",
+                "diagnose",
+                "diagnose",
+                "normalize",
+                "apply",
+                "verify",
+                "evidence"
+              ]
+            }
+          ],
+          "passed": true,
+          "note": "independent_verifier field in the raw evaluation report reads: Development tests; canonical API-contract migrations are operator supplied, not held out; verified separately via artifact-qualification.json"
+        },
+        {
+          "case_id": "hexo-yam-svgo",
+          "status": "awaiting_approval",
+          "first_attempt_success": true,
+          "attempts": 1,
+          "usage": {
+            "model_calls": 1,
+            "invalid_outputs": 0,
+            "input_tokens": 6163,
+            "output_tokens": 258,
+            "models": [
+              "gemini-3.1-pro-preview"
+            ]
+          },
+          "checks": [
+            {
+              "check": "baseline_green",
+              "passed": true,
+              "observed": "92/92"
+            },
+            {
+              "check": "regression_reproduced",
+              "passed": true,
+              "observed": "91/92 passing, 1 failures"
+            },
+            {
+              "check": "repair_verified",
+              "passed": true,
+              "observed": "92/92"
+            },
+            {
+              "check": "additional_checks_green",
+              "passed": true,
+              "observed": 0
+            },
+            {
+              "check": "integrity_preserved",
+              "passed": true,
+              "observed": true
+            },
+            {
+              "check": "dependency_at_target",
+              "passed": true,
+              "observed": "3.0.0"
+            },
+            {
+              "check": "within_attempt_budget",
+              "passed": true,
+              "observed": 1
+            },
+            {
+              "check": "no_reference_solution",
+              "passed": true,
+              "observed": false
+            },
+            {
+              "check": "artifact_applies_to_pristine_base",
+              "passed": true,
+              "observed": {
+                "report": true,
+                "qualification": true
+              }
+            },
+            {
+              "check": "independent_verifier_matches",
+              "passed": true,
+              "observed": {
+                "case_id": "hexo-yam-svgo",
+                "run_id": "104c0b964a0d4de48f7fd0264f4f1bad",
+                "tests_passed": 92,
+                "additional_checks_passed": true,
+                "patch_applies_to_pristine_base": true,
+                "patched_files_equal_verified_files": true
+              }
+            },
+            {
+              "check": "security_policies_replay",
+              "passed": true,
+              "observed": {
+                "case_id": "hexo-yam-svgo",
+                "input_guard_passed": true,
+                "output_guard_passed": true,
+                "patch_policy_passed": true,
+                "original_review_unchanged": true
+              }
+            },
+            {
+              "check": "prefix_order",
+              "passed": true,
+              "observed": [
+                "intake",
+                "baseline",
+                "upgrade",
+                "reproduce",
+                "investigate"
+              ]
+            },
+            {
+              "check": "verify_before_evidence",
+              "passed": true,
+              "observed": [
+                "intake",
+                "baseline",
+                "upgrade",
+                "reproduce",
+                "investigate",
+                "diagnose",
+                "normalize",
+                "apply",
+                "verify",
+                "evidence"
+              ]
+            },
+            {
+              "check": "ends_at_human_gate",
+              "passed": true,
+              "observed": "evidence"
+            },
+            {
+              "check": "no_export_without_approval",
+              "passed": true,
+              "observed": [
+                "intake",
+                "baseline",
+                "upgrade",
+                "reproduce",
+                "investigate",
+                "diagnose",
+                "normalize",
+                "apply",
+                "verify",
+                "evidence"
+              ]
+            },
+            {
+              "check": "apply_precedes_verify",
+              "passed": true,
+              "observed": [
+                "intake",
+                "baseline",
+                "upgrade",
+                "reproduce",
+                "investigate",
+                "diagnose",
+                "normalize",
+                "apply",
+                "verify",
+                "evidence"
+              ]
+            }
+          ],
+          "passed": true,
+          "note": "independent_verifier field in the raw evaluation report reads: Development tests; canonical API-contract migrations are operator supplied, not held out; verified separately via artifact-qualification.json"
+        },
+        {
+          "case_id": "v8r-js-yaml",
+          "status": "awaiting_approval",
+          "first_attempt_success": true,
+          "attempts": 1,
+          "usage": {
+            "model_calls": 1,
+            "invalid_outputs": 0,
+            "input_tokens": 6108,
+            "output_tokens": 149,
+            "models": [
+              "gemini-3.1-pro-preview"
+            ]
+          },
+          "checks": [
+            {
+              "check": "baseline_green",
+              "passed": true,
+              "observed": "20/20"
+            },
+            {
+              "check": "regression_reproduced",
+              "passed": true,
+              "observed": "17/20 passing, 3 failures"
+            },
+            {
+              "check": "repair_verified",
+              "passed": true,
+              "observed": "20/20"
+            },
+            {
+              "check": "additional_checks_green",
+              "passed": true,
+              "observed": 0
+            },
+            {
+              "check": "integrity_preserved",
+              "passed": true,
+              "observed": true
+            },
+            {
+              "check": "dependency_at_target",
+              "passed": true,
+              "observed": "4.0.0"
+            },
+            {
+              "check": "within_attempt_budget",
+              "passed": true,
+              "observed": 1
+            },
+            {
+              "check": "no_reference_solution",
+              "passed": true,
+              "observed": false
+            },
+            {
+              "check": "artifact_applies_to_pristine_base",
+              "passed": true,
+              "observed": {
+                "report": true,
+                "qualification": true
+              }
+            },
+            {
+              "check": "independent_verifier_matches",
+              "passed": true,
+              "observed": {
+                "case_id": "v8r-js-yaml",
+                "run_id": "a8a5b764723c40fd8db652d899b22bbb",
+                "tests_passed": 20,
+                "additional_checks_passed": true,
+                "patch_applies_to_pristine_base": true,
+                "patched_files_equal_verified_files": true
+              }
+            },
+            {
+              "check": "security_policies_replay",
+              "passed": true,
+              "observed": {
+                "case_id": "v8r-js-yaml",
+                "input_guard_passed": true,
+                "output_guard_passed": true,
+                "patch_policy_passed": true,
+                "original_review_unchanged": true
+              }
+            },
+            {
+              "check": "prefix_order",
+              "passed": true,
+              "observed": [
+                "intake",
+                "baseline",
+                "upgrade",
+                "reproduce",
+                "investigate"
+              ]
+            },
+            {
+              "check": "verify_before_evidence",
+              "passed": true,
+              "observed": [
+                "intake",
+                "baseline",
+                "upgrade",
+                "reproduce",
+                "investigate",
+                "diagnose",
+                "normalize",
+                "apply",
+                "verify",
+                "evidence"
+              ]
+            },
+            {
+              "check": "ends_at_human_gate",
+              "passed": true,
+              "observed": "evidence"
+            },
+            {
+              "check": "no_export_without_approval",
+              "passed": true,
+              "observed": [
+                "intake",
+                "baseline",
+                "upgrade",
+                "reproduce",
+                "investigate",
+                "diagnose",
+                "normalize",
+                "apply",
+                "verify",
+                "evidence"
+              ]
+            },
+            {
+              "check": "apply_precedes_verify",
+              "passed": true,
+              "observed": [
+                "intake",
+                "baseline",
+                "upgrade",
+                "reproduce",
+                "investigate",
+                "diagnose",
+                "normalize",
+                "apply",
+                "verify",
+                "evidence"
+              ]
+            }
+          ],
+          "passed": true,
+          "note": "independent_verifier field in the raw evaluation report reads: Development tests; canonical API-contract migrations are operator supplied, not held out; verified separately via artifact-qualification.json"
+        }
+      ],
+      "system": [
+        {
+          "check": "isolation_probes_5_of_5",
+          "passed": true,
+          "observed": "5/5"
+        },
+        {
+          "check": "container_smoke_booleans_all_true",
+          "passed": true,
+          "observed": {
+            "worker_docker_health": true,
+            "production_api_startup": true,
+            "unauthenticated_request_refused": true,
+            "registered_cases_visible": true,
+            "operator_cannot_approve": true,
+            "reviewer_cannot_execute": true,
+            "secure_login_cookie": true,
+            "api_has_no_docker_socket": true
+          }
+        },
+        {
+          "check": "http_security_all_true",
+          "passed": true,
+          "observed": {
+            "same_origin_CSP": true,
+            "no_referrer": true,
+            "frame_denied": true,
+            "authenticated_read": true,
+            "cross_site_write_blocked": true,
+            "oversized_write_blocked": true,
+            "cookie_write_without_origin_blocked": true,
+            "runtime_private": true,
+            "ready": true
+          }
+        },
+        {
+          "check": "review_gate_reverified",
+          "passed": true,
+          "observed": 20
+        },
+        {
+          "check": "python_profile_repaired",
+          "passed": true,
+          "observed": 2
+        }
+      ],
+      "known_limits": [
+        {
+          "item": "agent-company baseline",
+          "status": "blocked (honest negative result)",
+          "observed": "4 collection errors, 0 tests run; needs TYPESAFE_API_KEY at import"
+        }
+      ],
+      "caveat": "Four development cases with canonical test migrations; not an independent holdout benchmark."
+    },
+    "judge_calibration": {
+      "status": "skipped",
+      "reason": "GEMINI_API_KEY (or JUDGE_API_KEY) is not set"
+    },
+    "judge_live_repairs": {
+      "status": "skipped",
+      "reason": "No runtime/*/state.json: live repair runs need Docker + a model key (python scripts/evaluate.py)"
+    },
+    "ragas_live_repairs": {
+      "status": "skipped",
+      "reason": "No runtime/*/state.json to evaluate"
+    }
+  }
+}

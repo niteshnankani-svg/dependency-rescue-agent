@@ -13,3 +13,4 @@ reports/latest-run.json
 node_modules/
 dist/
 .vercel/
+.venv-eval/
