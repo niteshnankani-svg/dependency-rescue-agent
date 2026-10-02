@@ -1,0 +1,128 @@
+[
+ {
+  "id": "rename-keeps-local-name",
+  "files": {
+   "src/a.js": "const Local = require(\"widget\");\nconst c = new Local();\nmodule.exports = { c };\n"
+  },
+  "edits": [
+   {
+    "path": "src/a.js",
+    "old": "const Local = require(\"widget\");\n",
+    "new": "const { Cache } = require(\"widget\");\n"
+   }
+  ],
+  "expect_new": [
+   "const { Cache: Local } = require(\"widget\");\n"
+  ],
+  "note": "preserved local binding",
+  "category": "alpha-rename"
+ },
+ {
+  "id": "esm-import-kept-commonjs",
+  "files": {
+   "src/a.js": "const Local = require(\"widget\");\nconst c = new Local();\nmodule.exports = { c };\n"
+  },
+  "edits": [
+   {
+    "path": "src/a.js",
+    "old": "const Local = require(\"widget\");\n",
+    "new": "import { Cache } from \"widget\";\n"
+   }
+  ],
+  "expect_new": [
+   "const { Cache: Local } = require(\"widget\")\n"
+  ],
+  "note": "preserved CommonJS",
+  "category": "format"
+ },
+ {
+  "id": "unused-old-binding-untouched",
+  "files": {
+   "src/a.js": "const Local = require(\"widget\");\nmodule.exports = {};\n"
+  },
+  "edits": [
+   {
+    "path": "src/a.js",
+    "old": "const Local = require(\"widget\");\n",
+    "new": "const { Cache } = require(\"widget\");\n"
+   }
+  ],
+  "expect_new": [
+   "const { Cache } = require(\"widget\");\n"
+  ],
+  "note": "",
+  "category": "no-op"
+ },
+ {
+  "id": "different-module-untouched",
+  "files": {
+   "src/a.js": "const Local = require(\"widget\");\nconst c = new Local();\nmodule.exports = { c };\n"
+  },
+  "edits": [
+   {
+    "path": "src/a.js",
+    "old": "const Local = require(\"widget\");\n",
+    "new": "const { Cache } = require(\"other\");\n"
+   }
+  ],
+  "expect_new": [
+   "const { Cache } = require(\"other\");\n"
+  ],
+  "note": "",
+  "category": "no-op"
+ },
+ {
+  "id": "same-name-untouched",
+  "files": {
+   "src/a.js": "const Cache = require(\"widget\");\nnew Cache();\n"
+  },
+  "edits": [
+   {
+    "path": "src/a.js",
+    "old": "const Cache = require(\"widget\");\n",
+    "new": "const { Cache } = require(\"widget\");\n"
+   }
+  ],
+  "expect_new": [
+   "const { Cache } = require(\"widget\");\n"
+  ],
+  "note": "",
+  "category": "no-op"
+ },
+ {
+  "id": "trailing-newline-restored",
+  "files": {
+   "src/a.js": "const x = 1;\nrun(x);\n"
+  },
+  "edits": [
+   {
+    "path": "src/a.js",
+    "old": "const x = 1;\n",
+    "new": "const x = 2;"
+   }
+  ],
+  "expect_new": [
+   "const x = 2;\n"
+  ],
+  "note": "",
+  "category": "format"
+ },
+ {
+  "id": "non-import-edit-untouched",
+  "files": {
+   "src/a.js": "const Local = require(\"widget\");\nconst c = new Local();\nmodule.exports = { c };\n"
+  },
+  "edits": [
+   {
+    "path": "src/a.js",
+    "old": "new Local()",
+    "new": "new Local(1)"
+   }
+  ],
+  "expect_new": [
+   "new Local(1)"
+  ],
+  "note": "",
+  "category": "no-op"
+ }
+]

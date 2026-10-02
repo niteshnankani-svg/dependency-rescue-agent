@@ -43,6 +43,10 @@ Open <http://127.0.0.1:8093>. The loopback development UI receives a local HttpO
 .venv/bin/python scripts/isolation_probe.py
 ```
 
+## Evaluation
+
+`python -m evals.run` evaluates the agent end to end: safety detectors, model adapters, the 13-node graph under 43 scenarios with real test execution, recorded-evidence audit, mutation checks that prove the evals can fail, and an LLM-as-judge calibrated on labelled good/bad patches. `--live` adds a real model and adversarial injections. See [evals/README.md](evals/README.md).
+
 ## Security
 
 Prompt-injection and credential screening, generated-code restrictions, isolated execution, request limits, browser protections and evidence-bound approval are documented in [SECURITY.md](SECURITY.md). These are layered protections, not a guarantee against every injection or malicious repair.

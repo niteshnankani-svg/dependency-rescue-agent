@@ -1,0 +1,488 @@
+[
+ {
+  "id": "ok-rename-import",
+  "files": {
+   "src/a.js": "const Cache = require('widget');\nconst c = new Cache();\nmodule.exports = { c };\n",
+   "src/b.js": "const x = 1;\nconst x2 = 1;\nmodule.exports = x;\n",
+   "test/a.spec.js": "it('x',()=>{});\n",
+   "package.json": "{\"name\":\"x\"}\n"
+  },
+  "edits": [
+   {
+    "path": "src/a.js",
+    "old": "const Cache = require('widget');",
+    "new": "const { Cache } = require('widget');"
+   }
+  ],
+  "expect": "ok",
+  "error_contains": "",
+  "result": {
+   "src/a.js": "const { Cache } = require('widget');\nconst c = new Cache();\nmodule.exports = { c };\n"
+  },
+  "category": "accept",
+  "symlink": null
+ },
+ {
+  "id": "ok-two-files",
+  "files": {
+   "src/a.js": "const Cache = require('widget');\nconst c = new Cache();\nmodule.exports = { c };\n",
+   "src/b.js": "const x = 1;\nconst x2 = 1;\nmodule.exports = x;\n",
+   "test/a.spec.js": "it('x',()=>{});\n",
+   "package.json": "{\"name\":\"x\"}\n"
+  },
+  "edits": [
+   {
+    "path": "src/a.js",
+    "old": "new Cache()",
+    "new": "new Cache(1)"
+   },
+   {
+    "path": "src/b.js",
+    "old": "const x = 1;\nconst",
+    "new": "const x = 2;\nconst"
+   }
+  ],
+  "expect": "ok",
+  "error_contains": "",
+  "result": {},
+  "category": "accept",
+  "symlink": null
+ },
+ {
+  "id": "ok-two-edits-same-file",
+  "files": {
+   "src/a.js": "const Cache = require('widget');\nconst c = new Cache();\nmodule.exports = { c };\n",
+   "src/b.js": "const x = 1;\nconst x2 = 1;\nmodule.exports = x;\n",
+   "test/a.spec.js": "it('x',()=>{});\n",
+   "package.json": "{\"name\":\"x\"}\n"
+  },
+  "edits": [
+   {
+    "path": "src/a.js",
+    "old": "const c = new Cache();",
+    "new": "const c = new Cache(2);"
+   },
+   {
+    "path": "src/a.js",
+    "old": "module.exports = { c };",
+    "new": "module.exports = { c, Cache };"
+   }
+  ],
+  "expect": "ok",
+  "error_contains": "",
+  "result": {},
+  "category": "accept",
+  "symlink": null
+ },
+ {
+  "id": "refuse-missing-anchor",
+  "files": {
+   "src/a.js": "const Cache = require('widget');\nconst c = new Cache();\nmodule.exports = { c };\n",
+   "src/b.js": "const x = 1;\nconst x2 = 1;\nmodule.exports = x;\n",
+   "test/a.spec.js": "it('x',()=>{});\n",
+   "package.json": "{\"name\":\"x\"}\n"
+  },
+  "edits": [
+   {
+    "path": "src/a.js",
+    "old": "not present",
+    "new": "x"
+   }
+  ],
+  "expect": "error",
+  "error_contains": "exactly once",
+  "result": {},
+  "category": "anchor",
+  "symlink": null
+ },
+ {
+  "id": "refuse-ambiguous-anchor",
+  "files": {
+   "src/a.js": "const Cache = require('widget');\nconst c = new Cache();\nmodule.exports = { c };\n",
+   "src/b.js": "const x = 1;\nconst x2 = 1;\nmodule.exports = x;\n",
+   "test/a.spec.js": "it('x',()=>{});\n",
+   "package.json": "{\"name\":\"x\"}\n"
+  },
+  "edits": [
+   {
+    "path": "src/b.js",
+    "old": "= 1;",
+    "new": "= 3;"
+   }
+  ],
+  "expect": "error",
+  "error_contains": "exactly once",
+  "result": {},
+  "category": "anchor",
+  "symlink": null
+ },
+ {
+  "id": "refuse-noop",
+  "files": {
+   "src/a.js": "const Cache = require('widget');\nconst c = new Cache();\nmodule.exports = { c };\n",
+   "src/b.js": "const x = 1;\nconst x2 = 1;\nmodule.exports = x;\n",
+   "test/a.spec.js": "it('x',()=>{});\n",
+   "package.json": "{\"name\":\"x\"}\n"
+  },
+  "edits": [
+   {
+    "path": "src/a.js",
+    "old": "new Cache()",
+    "new": "new Cache()"
+   }
+  ],
+  "expect": "error",
+  "error_contains": "No-op",
+  "result": {},
+  "category": "anchor",
+  "symlink": null
+ },
+ {
+  "id": "refuse-test-file",
+  "files": {
+   "src/a.js": "const Cache = require('widget');\nconst c = new Cache();\nmodule.exports = { c };\n",
+   "src/b.js": "const x = 1;\nconst x2 = 1;\nmodule.exports = x;\n",
+   "test/a.spec.js": "it('x',()=>{});\n",
+   "package.json": "{\"name\":\"x\"}\n"
+  },
+  "edits": [
+   {
+    "path": "test/a.spec.js",
+    "old": "it('x',()=>{});",
+    "new": "it.skip('x',()=>{});"
+   }
+  ],
+  "expect": "error",
+  "error_contains": "allowlist",
+  "result": {},
+  "category": "scope",
+  "symlink": null
+ },
+ {
+  "id": "refuse-manifest",
+  "files": {
+   "src/a.js": "const Cache = require('widget');\nconst c = new Cache();\nmodule.exports = { c };\n",
+   "src/b.js": "const x = 1;\nconst x2 = 1;\nmodule.exports = x;\n",
+   "test/a.spec.js": "it('x',()=>{});\n",
+   "package.json": "{\"name\":\"x\"}\n"
+  },
+  "edits": [
+   {
+    "path": "package.json",
+    "old": "\"x\"",
+    "new": "\"y\""
+   }
+  ],
+  "expect": "error",
+  "error_contains": "allowlist",
+  "result": {},
+  "category": "scope",
+  "symlink": null
+ },
+ {
+  "id": "refuse-traversal",
+  "files": {
+   "src/a.js": "const Cache = require('widget');\nconst c = new Cache();\nmodule.exports = { c };\n",
+   "src/b.js": "const x = 1;\nconst x2 = 1;\nmodule.exports = x;\n",
+   "test/a.spec.js": "it('x',()=>{});\n",
+   "package.json": "{\"name\":\"x\"}\n"
+  },
+  "edits": [
+   {
+    "path": "../outside.js",
+    "old": "a",
+    "new": "b"
+   }
+  ],
+  "expect": "error",
+  "error_contains": "allowlist",
+  "result": {},
+  "category": "scope",
+  "symlink": null
+ },
+ {
+  "id": "refuse-absolute",
+  "files": {
+   "src/a.js": "const Cache = require('widget');\nconst c = new Cache();\nmodule.exports = { c };\n",
+   "src/b.js": "const x = 1;\nconst x2 = 1;\nmodule.exports = x;\n",
+   "test/a.spec.js": "it('x',()=>{});\n",
+   "package.json": "{\"name\":\"x\"}\n"
+  },
+  "edits": [
+   {
+    "path": "/etc/passwd",
+    "old": "root",
+    "new": "evil"
+   }
+  ],
+  "expect": "error",
+  "error_contains": "allowlist",
+  "result": {},
+  "category": "scope",
+  "symlink": null
+ },
+ {
+  "id": "refuse-nonexistent-path",
+  "files": {
+   "src/a.js": "const Cache = require('widget');\nconst c = new Cache();\nmodule.exports = { c };\n",
+   "src/b.js": "const x = 1;\nconst x2 = 1;\nmodule.exports = x;\n",
+   "test/a.spec.js": "it('x',()=>{});\n",
+   "package.json": "{\"name\":\"x\"}\n"
+  },
+  "edits": [
+   {
+    "path": "src/new.js",
+    "old": "a",
+    "new": "b"
+   }
+  ],
+  "expect": "error",
+  "error_contains": "allowlist",
+  "result": {},
+  "category": "scope",
+  "symlink": null
+ },
+ {
+  "id": "refuse-symlink",
+  "files": {
+   "src/real.js": "const x = 1;\n"
+  },
+  "edits": [
+   {
+    "path": "src/link.js",
+    "old": "const x = 1;",
+    "new": "const x = 2;"
+   }
+  ],
+  "expect": "error",
+  "error_contains": "allowlist",
+  "result": {},
+  "category": "scope",
+  "symlink": [
+   "src/link.js",
+   "real.js"
+  ]
+ },
+ {
+  "id": "refuse-process-exit",
+  "files": {
+   "src/a.js": "const Cache = require('widget');\nconst c = new Cache();\nmodule.exports = { c };\n",
+   "src/b.js": "const x = 1;\nconst x2 = 1;\nmodule.exports = x;\n",
+   "test/a.spec.js": "it('x',()=>{});\n",
+   "package.json": "{\"name\":\"x\"}\n"
+  },
+  "edits": [
+   {
+    "path": "src/a.js",
+    "old": "new Cache()",
+    "new": "process.exit(0)"
+   }
+  ],
+  "expect": "error",
+  "error_contains": "forbidden",
+  "result": {},
+  "category": "capability",
+  "symlink": null
+ },
+ {
+  "id": "refuse-child-process",
+  "files": {
+   "src/a.js": "const Cache = require('widget');\nconst c = new Cache();\nmodule.exports = { c };\n",
+   "src/b.js": "const x = 1;\nconst x2 = 1;\nmodule.exports = x;\n",
+   "test/a.spec.js": "it('x',()=>{});\n",
+   "package.json": "{\"name\":\"x\"}\n"
+  },
+  "edits": [
+   {
+    "path": "src/a.js",
+    "old": "new Cache()",
+    "new": "require('child_process').execSync('id')"
+   }
+  ],
+  "expect": "error",
+  "error_contains": "",
+  "result": {},
+  "category": "capability",
+  "symlink": null
+ },
+ {
+  "id": "refuse-eval",
+  "files": {
+   "src/a.js": "const Cache = require('widget');\nconst c = new Cache();\nmodule.exports = { c };\n",
+   "src/b.js": "const x = 1;\nconst x2 = 1;\nmodule.exports = x;\n",
+   "test/a.spec.js": "it('x',()=>{});\n",
+   "package.json": "{\"name\":\"x\"}\n"
+  },
+  "edits": [
+   {
+    "path": "src/a.js",
+    "old": "new Cache()",
+    "new": "eval('1')"
+   }
+  ],
+  "expect": "error",
+  "error_contains": "",
+  "result": {},
+  "category": "capability",
+  "symlink": null
+ },
+ {
+  "id": "refuse-fetch",
+  "files": {
+   "src/a.js": "const Cache = require('widget');\nconst c = new Cache();\nmodule.exports = { c };\n",
+   "src/b.js": "const x = 1;\nconst x2 = 1;\nmodule.exports = x;\n",
+   "test/a.spec.js": "it('x',()=>{});\n",
+   "package.json": "{\"name\":\"x\"}\n"
+  },
+  "edits": [
+   {
+    "path": "src/a.js",
+    "old": "new Cache()",
+    "new": "fetch('https://x.test')"
+   }
+  ],
+  "expect": "error",
+  "error_contains": "",
+  "result": {},
+  "category": "capability",
+  "symlink": null
+ },
+ {
+  "id": "refuse-test-bypass-only",
+  "files": {
+   "src/a.js": "const Cache = require('widget');\nconst c = new Cache();\nmodule.exports = { c };\n",
+   "src/b.js": "const x = 1;\nconst x2 = 1;\nmodule.exports = x;\n",
+   "test/a.spec.js": "it('x',()=>{});\n",
+   "package.json": "{\"name\":\"x\"}\n"
+  },
+  "edits": [
+   {
+    "path": "src/a.js",
+    "old": "new Cache()",
+    "new": "it.only('x')"
+   }
+  ],
+  "expect": "error",
+  "error_contains": "forbidden",
+  "result": {},
+  "category": "capability",
+  "symlink": null
+ },
+ {
+  "id": "refuse-new-require",
+  "files": {
+   "src/a.js": "const Cache = require('widget');\nconst c = new Cache();\nmodule.exports = { c };\n",
+   "src/b.js": "const x = 1;\nconst x2 = 1;\nmodule.exports = x;\n",
+   "test/a.spec.js": "it('x',()=>{});\n",
+   "package.json": "{\"name\":\"x\"}\n"
+  },
+  "edits": [
+   {
+    "path": "src/a.js",
+    "old": "new Cache()",
+    "new": "require('lodash')"
+   }
+  ],
+  "expect": "error",
+  "error_contains": "module dependency",
+  "result": {},
+  "category": "capability",
+  "symlink": null
+ },
+ {
+  "id": "refuse-credential",
+  "files": {
+   "src/a.js": "const Cache = require('widget');\nconst c = new Cache();\nmodule.exports = { c };\n",
+   "src/b.js": "const x = 1;\nconst x2 = 1;\nmodule.exports = x;\n",
+   "test/a.spec.js": "it('x',()=>{});\n",
+   "package.json": "{\"name\":\"x\"}\n"
+  },
+  "edits": [
+   {
+    "path": "src/a.js",
+    "old": "new Cache()",
+    "new": "('AKIAIOSFODNN7EXAMPLE')"
+   }
+  ],
+  "expect": "error",
+  "error_contains": "",
+  "result": {},
+  "category": "capability",
+  "symlink": null
+ },
+ {
+  "id": "refuse-duplicate-module-exports",
+  "files": {
+   "src/a.js": "const Cache = require('widget');\nconst c = new Cache();\nmodule.exports = { c };\n",
+   "src/b.js": "const x = 1;\nconst x2 = 1;\nmodule.exports = x;\n",
+   "test/a.spec.js": "it('x',()=>{});\n",
+   "package.json": "{\"name\":\"x\"}\n"
+  },
+  "edits": [
+   {
+    "path": "src/a.js",
+    "old": "const c = new Cache();",
+    "new": "const c = new Cache();\nmodule.exports = { other: 1 };"
+   }
+  ],
+  "expect": "error",
+  "error_contains": "module.exports",
+  "result": {},
+  "category": "semantic",
+  "symlink": null
+ },
+ {
+  "id": "py-ok",
+  "files": {
+   "src/m.py": "import json\n\ndef f(x):\n    return json.dumps(x)\n"
+  },
+  "edits": [
+   {
+    "path": "src/m.py",
+    "old": "return json.dumps(x)",
+    "new": "return json.dumps(x, sort_keys=True)"
+   }
+  ],
+  "expect": "ok",
+  "error_contains": "",
+  "result": {},
+  "category": "python",
+  "symlink": null
+ },
+ {
+  "id": "py-syntax-error",
+  "files": {
+   "src/m.py": "import json\n\ndef f(x):\n    return json.dumps(x)\n"
+  },
+  "edits": [
+   {
+    "path": "src/m.py",
+    "old": "return json.dumps(x)",
+    "new": "return json.dumps(x"
+   }
+  ],
+  "expect": "error",
+  "error_contains": "valid syntax",
+  "result": {},
+  "category": "python",
+  "symlink": null
+ },
+ {
+  "id": "py-new-import",
+  "files": {
+   "src/m.py": "import json\n\ndef f(x):\n    return json.dumps(x)\n"
+  },
+  "edits": [
+   {
+    "path": "src/m.py",
+    "old": "import json\n",
+    "new": "import json\nimport socket\n"
+   }
+  ],
+  "expect": "error",
+  "error_contains": "",
+  "result": {},
+  "category": "python",
+  "symlink": null
+ }
+]
