@@ -8,6 +8,8 @@ from urllib.parse import quote
 import httpx
 from .delivery import installation_token
 
+class MissingFile(ValueError):pass
+
 REPOSITORY=re.compile(r'^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$')
 
 
@@ -46,12 +48,12 @@ class GitHub:
     def file(self,repo,sha,path):
         response=self.client.get('/repos/'+repo+'/contents/'+quote(path,safe='/'),params={'ref':sha})
         if response.status_code==404:
-            raise ValueError(f'Required root file {path} is unavailable at this commit. This importer supports npm projects with root package.json and package-lock.json; Python projects and nested frontend projects need a separate execution profile.')
+            raise MissingFile(f'Required file {path} is unavailable at this commit. Choose a project folder containing package.json with package-lock.json, requirements.txt, or pyproject.toml.')
         if response.status_code in (401,403):raise ValueError('GitHub access denied or rate limited. Check the server connection and repository permissions.')
         response.raise_for_status();data=response.json()
         if not isinstance(data,dict) or data.get('encoding')!='base64' or data.get('size',0)>2_000_000:raise ValueError('Unsupported or oversized repository file')
         return base64.b64decode(data['content'])
-    def mcp_manifest(self,repo,sha):
+    def mcp_manifest(self,repo,sha,path="package.json"):
         """One fixed read-only MCP tool; no arbitrary endpoints or model tool dispatch."""
         if not self.token:raise ValueError('GitHub authentication is required for MCP')
         owner,name=repo.split('/')
@@ -74,6 +76,6 @@ class GitHub:
             initialized=rpc('initialize',{'protocolVersion':'2025-03-26','capabilities':{},'clientInfo':{'name':'dependency-rescue','version':'0.3.0'}},1)
             c.headers['MCP-Protocol-Version']=initialized.get('protocolVersion','2025-03-26')
             rpc('notifications/initialized',{})
-            result=rpc('tools/call',{'name':'get_file_contents','arguments':{'owner':owner,'repo':name,'path':'package.json','ref':sha}},2)
+            result=rpc('tools/call',{'name':'get_file_contents','arguments':{'owner':owner,'repo':name,'path':path,'ref':sha}},2)
             if not result.get('content'):raise ValueError('GitHub MCP returned no manifest evidence')
             return {'tool':'get_file_contents','repository':repo,'commit':sha,'verified':True}

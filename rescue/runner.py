@@ -20,6 +20,7 @@ def run_tests(root: Path, timeout: int = 60, case=None, phase='upgraded') -> dic
     if mode=='docker':
         from .execution import docker_execute
         return docker_execute(root,selected)
+    if selected.language=='python':raise RuntimeError('Python repositories require the isolated Docker runner')
     if os.getenv('RESCUE_ENV')=='production':
         raise RuntimeError('Production requires remote isolated execution')
     if sys.platform != 'darwin' or not Path('/usr/bin/sandbox-exec').exists():

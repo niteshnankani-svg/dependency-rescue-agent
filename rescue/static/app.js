@@ -204,8 +204,8 @@ $('github-connect').onclick=async()=>{
 };
 $('github-inspect').onsubmit=async event=>{
   event.preventDefault();if(githubBusy)return;githubBusy=true;$('github-inspect-button').disabled=true;$('github-prepare').hidden=true;githubInspection=null;
-  githubMessage('Resolving an immutable commit and checking npm/test compatibility…');
-  try { githubInspection=await api('/api/github/inspect',{method:'POST',body:JSON.stringify({repository:$('github-repo').value.trim(),ref:$('github-ref').value.trim(),use_mcp:$('github-mcp').checked}),timeout:90000});
+  githubMessage('Resolving an immutable commit and checking Python/npm test compatibility…');
+  try { githubInspection=await api('/api/github/inspect',{method:'POST',body:JSON.stringify({repository:$('github-repo').value.trim(),ref:$('github-ref').value.trim(),use_mcp:$('github-mcp').checked,project_dir:$('github-project-dir').value.trim()}),timeout:90000});
     $('github-summary').textContent=`${githubInspection.repository} · ${githubInspection.commit.slice(0,12)} · ${githubInspection.reporter} · ${githubInspection.mcp?'MCP read verified':'GitHub API inspection'}`;
     $('github-dependency').replaceChildren(...Object.entries(githubInspection.dependencies).map(([name,version])=>{const option=node('option',`${name} (${version})`);option.value=name;return option;}));
     $('github-prepare-button').disabled=false;$('github-prepare').hidden=false;githubMessage(githubInspection.message);

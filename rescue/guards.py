@@ -1,3 +1,4 @@
+import ast
 import hashlib
 import re
 from pathlib import Path, PurePosixPath
@@ -21,7 +22,7 @@ class Repair(BaseModel):
 def source_files(root,globs=None):
     root=root.resolve()
     candidates=set(p for pattern in (globs or ['src/**/*.js']) for p in root.glob(pattern))
-    return sorted(p for p in candidates if p.is_file() and not p.is_symlink() and p.resolve().is_relative_to(root) and not any(parent.is_symlink() for parent in p.parents if parent.is_relative_to(root)) and p.suffix in ['.js','.ts','.mjs','.cjs','.tsx','.jsx'] and not any(x in p.name.lower() for x in ['.spec.','.test.','test-','test_']) and not any(x in p.relative_to(root).parts for x in ['node_modules','tests','test','__tests__','.git']))
+    return sorted(p for p in candidates if p.is_file() and not p.is_symlink() and p.resolve().is_relative_to(root) and not any(parent.is_symlink() for parent in p.parents if parent.is_relative_to(root)) and p.suffix in ['.js','.ts','.mjs','.cjs','.tsx','.jsx','.py'] and p.name not in ['conftest.py','setup.py'] and not p.name.endswith('_test.py') and not any(x in p.name.lower() for x in ['.spec.','.test.','test-','test_']) and not any(x in p.relative_to(root).parts for x in ['node_modules','.rescue-python-packages','.venv','tests','test','__tests__','__pycache__','.git']))
 
 
 def digest_files(root: Path, paths) -> str:
@@ -34,7 +35,7 @@ def digest_files(root: Path, paths) -> str:
 def protected_digest(root,globs=None):
     root=root.resolve()
     sources=set(source_files(root,globs))
-    return digest_files(root, [p for p in root.rglob('*') if p.is_file() and 'node_modules' not in p.parts and '.git' not in p.parts and p not in sources])
+    return digest_files(root, [p for p in root.rglob('*') if p.is_file() and 'node_modules' not in p.parts and '.rescue-python-packages' not in p.parts and '.git' not in p.parts and p not in sources])
 
 
 def snapshot_digest(root):
@@ -117,6 +118,13 @@ def apply_repair(root: Path, repair: Repair, globs=None):
         updates[path]=text.replace(edit.old,edit.new,1)
     for path,text in updates.items():
         original=path.read_text()
+        if path.suffix=='.py':
+            try:old_tree=ast.parse(original);new_tree=ast.parse(text)
+            except SyntaxError:raise ValueError('Python repair must contain valid syntax') from None
+            def imports(tree):
+                return {module for node in ast.walk(tree) if isinstance(node,(ast.Import,ast.ImportFrom)) for module in ([node.module or ''] if isinstance(node,ast.ImportFrom) else [alias.name for alias in node.names])}
+            if imports(new_tree)-imports(old_tree):raise ValueError('Python repair introduces a new module dependency')
+            check_new_capabilities(original,text)
         if len(re.findall(r'\bmodule\.exports\s*=',text))>len(re.findall(r'\bmodule\.exports\s*=',original)):
             raise ValueError('Added module.exports would duplicate or overwrite the existing export; modify the existing implementation in place')
     for p,text in updates.items():

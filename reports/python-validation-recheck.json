@@ -1,0 +1,14 @@
+{
+  "exit_code": 0,
+  "timed_out": false,
+  "seconds": 1.09,
+  "tests": 2,
+  "passes": 2,
+  "failures": [],
+  "ok": true,
+  "infrastructure_error": false,
+  "isolation": "Docker: no network, read-only source, non-root, no capabilities, CPU/memory/PID limits",
+  "image": "python:3.11-slim@sha256:bab1b7ef4b450c81002278d035eff85ebe394ae94df904f7a3ba14f7e16e487b",
+  "additional_checks": [],
+  "integrity_ok": true
+}

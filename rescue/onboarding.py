@@ -14,9 +14,11 @@ from urllib.parse import urlparse
 import httpx
 from pydantic import BaseModel,ConfigDict,Field
 from .config import Case,DATA,RUNTIME
-from .github_connection import GitHub
+from .github_connection import GitHub,MissingFile
 from .execution import docker_prefix
 from .guards import source_preflight
+from . import python_profile
+from .security import secret_present
 
 LOCK=threading.Lock()
 MAX_ARCHIVE=30_000_000
@@ -29,6 +31,7 @@ class Inspect(BaseModel):
     repository:str=Field(pattern=r'^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$',max_length=200)
     ref:str=Field(default='',max_length=150,pattern=r'^[A-Za-z0-9_./-]*$')
     use_mcp:bool=True
+    project_dir:str=Field(default='',max_length=150,pattern=r'^(?:[A-Za-z0-9_-][A-Za-z0-9_./-]*)?$')
 
 
 class Prepare(BaseModel):
@@ -96,12 +99,26 @@ def inspect(body,actor):
         from urllib.parse import quote
         commit=github.get('/repos/'+body.repository+'/commits/'+quote(body.ref or meta['default_branch'],safe=''))['sha']
         if not re.fullmatch('[a-f0-9]{40}',commit):raise ValueError('GitHub did not resolve an immutable commit')
-        package=json.loads(github.file(body.repository,commit,'package.json'))
-        lock=json.loads(github.file(body.repository,commit,'package-lock.json'))
-        validate_manifest(package,lock);reporter,args=test_profile(package)
-        mcp=github.mcp_manifest(body.repository,commit) if body.use_mcp else None
-        dependencies={**package.get('devDependencies',{}),**package.get('dependencies',{})}
-        value={'id':uuid.uuid4().hex,'actor':actor,'status':'inspected','repository':body.repository,'commit':commit,'dependencies':dependencies,'reporter':reporter,'test_args':args,'license':str(package.get('license') or 'Unspecified')[:100],'mcp':mcp,'message':'Inspection passed. Choose a dependency and exact target version to prepare isolated environments.'}
+        project=body.project_dir
+        if '..' in PurePosixPath(project).parts:raise ValueError('Project folder must remain inside repository')
+        prefix=project.rstrip('/')+'/' if project else ''
+        try:
+            package=json.loads(github.file(body.repository,commit,prefix+'package.json'))
+        except MissingFile:
+            language='python';package={}
+            try:
+                manifest_path=prefix+'requirements.txt';text=github.file(body.repository,commit,manifest_path).decode()
+            except MissingFile:
+                manifest_path=prefix+'pyproject.toml';text=github.file(body.repository,commit,manifest_path).decode()
+            dependencies,lines=python_profile.manifest(text,manifest_path)
+            reporter,args='pytest',['-c',python_profile.TEST_CODE]
+        else:
+            language='node';manifest_path=prefix+'package.json';lines=[]
+            lock=json.loads(github.file(body.repository,commit,prefix+'package-lock.json'))
+            validate_manifest(package,lock);reporter,args=test_profile(package)
+            dependencies={**package.get('devDependencies',{}),**package.get('dependencies',{})}
+        mcp=(github.mcp_manifest(body.repository,commit) if manifest_path=='package.json' else github.mcp_manifest(body.repository,commit,manifest_path)) if body.use_mcp else None
+        value={'id':uuid.uuid4().hex,'actor':actor,'status':'inspected','repository':body.repository,'commit':commit,'dependencies':dependencies,'language':language,'project_dir':project,'manifest_path':manifest_path,'requirements':lines,'reporter':reporter,'test_args':args,'license':str(package.get('license') or 'Unspecified')[:100],'mcp':mcp,'message':('Python 3.11 / pytest inspection passed. Published wheels only; tests run offline without API keys. Missing models, fixtures or integration services will block baseline verification.' if language=='python' else 'Inspection passed.')+' Choose a dependency and exact target version to prepare isolated environments.'}
         save(value);return value
     finally:github.close()
 
@@ -116,12 +133,15 @@ def extract(data,destination):
             if len(parts)<2:continue
             relative=PurePosixPath(*parts[1:])
             if member.name.startswith('/') or '..' in parts or '\\' in member.name or not (member.isfile() or member.isdir()):raise ValueError('Archive contains unsafe paths, links, or special files')
-            if any(p in ['.git','node_modules','.npmrc','.pypirc'] or p=='.env' or p.startswith('.env.') for p in relative.parts):raise ValueError('Remove vendored dependencies, credential/configuration files before onboarding')
+            template=relative.name.startswith('.env.') and relative.name.endswith(('.example','.sample'))
+            if any(p in ['.git','node_modules','.npmrc','.pypirc','.venv','__pycache__',*python_profile.RESERVED] or p=='.env' or (p.startswith('.env.') and not (p==relative.name and template)) for p in relative.parts):raise ValueError('Remove vendored dependencies, credential/configuration files before onboarding')
             target=destination/relative
             if member.isdir():target.mkdir(parents=True,exist_ok=True);continue
             target.parent.mkdir(parents=True,exist_ok=True)
             if target.exists():raise ValueError('Archive contains duplicate files')
-            with archive.extractfile(member) as source:target.write_bytes(source.read())
+            with archive.extractfile(member) as source:content=source.read()
+            if template and secret_present(content.decode(errors='replace')):raise ValueError('Environment template contains a possible credential; remove it before importing')
+            target.write_bytes(content)
             target.chmod(0o755 if member.mode&0o111 else 0o644)
 
 
@@ -175,19 +195,41 @@ def prepare_worker(body,value):
         root.mkdir(mode=0o700,exist_ok=False)
         baseline=root/'baseline';baseline.mkdir()
         extract(archive_bytes(github,value['repository'],value['commit']),baseline)
-        package=json.loads((baseline/'package.json').read_text());lock=json.loads((baseline/'package-lock.json').read_text())
-        validate_manifest(package,lock)
-        reporter,args=test_profile(package)
-        globs=['src/**/*.js','src/**/*.ts','lib/**/*.js','lib/**/*.ts','index.js','index.ts']
-        if not source_preflight(baseline,globs):raise ValueError('No supported source files found in src/, lib/, or repository root')
-        case=Case(id=case_id,repository=value['repository'],base_commit=value['commit'],dependency=body.dependency,old_version=value['dependencies'][body.dependency],target_version=body.target_version,template_dir='imports/'+case_id,source_globs=globs,test_args=args,reporter=reporter,license=value['license'],evaluation_role='customer repository — baseline not yet verified')
+        if value.get('project_dir'):
+            selected=baseline/value['project_dir']
+            if not selected.is_dir():raise ValueError('Selected project folder is missing')
+            selected.rename(root/'selected-project');shutil.rmtree(baseline);(root/'selected-project').rename(baseline)
+        language=value.get('language','node')
+        if language=='python':
+            manifest_path=PurePosixPath(value['manifest_path']).name
+            dependencies,lines=python_profile.manifest((baseline/manifest_path).read_text(),manifest_path)
+            globs=['**/*.py'];reporter='pytest';args=['-c',python_profile.TEST_CODE]
+        else:
+            package=json.loads((baseline/'package.json').read_text());lock=json.loads((baseline/'package-lock.json').read_text())
+            validate_manifest(package,lock);reporter,args=test_profile(package)
+            globs=['src/**/*.js','src/**/*.ts','lib/**/*.js','lib/**/*.ts','index.js','index.ts']
+        if not source_preflight(baseline,globs):raise ValueError('No supported editable source files found')
+        case=Case(id=case_id,repository=value['repository'],base_commit=value['commit'],dependency=body.dependency,old_version=value['dependencies'][body.dependency],target_version=body.target_version,template_dir='imports/'+case_id,source_globs=globs,test_args=args,reporter=reporter,language=language,project_dir=value.get('project_dir',''),python_manifest=PurePosixPath(value.get('manifest_path','requirements.txt')).name if language=='python' else 'requirements.txt',license=value['license'],evaluation_role='customer repository — baseline not yet verified',**({'image':python_profile.IMAGE} if language=='python' else {}))
         upgraded=root/'upgraded';shutil.copytree(baseline,upgraded)
-        for group in ['dependencies','devDependencies']:
-            if body.dependency in package.get(group,{}):package[group][body.dependency]=body.target_version
-        (upgraded/'package.json').write_text(json.dumps(package,indent=2)+'\n')
-        setup(upgraded,case,['install','--package-lock-only'])
-        validate_manifest(package,json.loads((upgraded/'package-lock.json').read_text()))
-        for phase in [baseline,upgraded]:setup(phase,case,['ci'])
+        if language=='python':
+            versions=python_profile.setup(baseline,case,lines)
+            if body.dependency not in versions:raise ValueError('Selected package is excluded by environment markers')
+            case=case.model_copy(update={'old_version':versions[body.dependency]})
+            upgraded_lines=python_profile.pin(lines,versions,body.dependency,body.target_version)
+            # Preserve the original manifest in baseline; update the upgrade manifest only.
+            if manifest_path=='requirements.txt':(upgraded/manifest_path).write_text('\n'.join(upgraded_lines)+'\n')
+            else:
+                import tomllib,tomli_w
+                document=tomllib.loads((upgraded/manifest_path).read_text());document['project']['dependencies']=upgraded_lines
+                (upgraded/manifest_path).write_text(tomli_w.dumps(document))
+            python_profile.setup(upgraded,case,upgraded_lines)
+        else:
+            for group in ['dependencies','devDependencies']:
+                if body.dependency in package.get(group,{}):package[group][body.dependency]=body.target_version
+            (upgraded/'package.json').write_text(json.dumps(package,indent=2)+'\n')
+            setup(upgraded,case,['install','--package-lock-only'])
+            validate_manifest(package,json.loads((upgraded/'package-lock.json').read_text()))
+            for phase in [baseline,upgraded]:setup(phase,case,['ci'])
         if case.version(upgraded)!=body.target_version:raise ValueError('Installed dependency does not match the selected target')
         if case.version(baseline)==body.target_version:raise ValueError('Baseline already uses the requested target version')
         registry=IMPORTS/'registry.json';rows=json.loads(registry.read_text()) if registry.exists() else []

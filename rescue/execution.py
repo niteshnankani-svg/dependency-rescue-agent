@@ -44,7 +44,7 @@ def parse_result(raw,returncode,elapsed,case,timed_out=False):
     if not payload:
         failures=[{'message':raw[-7000:] or 'No test report produced'}]
     failures=[{k:redact_text(v) if isinstance(v,str) else v for k,v in failure.items()} for failure in failures]
-    infrastructure=returncode in [125,126,127] or (not payload and bool(re.search(r'Failed to initialize: unable to resolve docker endpoint|Cannot connect to the Docker daemon|error during connect:|Error response from daemon:|OCI runtime .*failed',raw)))
+    infrastructure=returncode in [125,126,127,137] or (not payload and bool(re.search(r'Failed to initialize: unable to resolve docker endpoint|Cannot connect to the Docker daemon|error during connect:|Error response from daemon:|OCI runtime .*failed',raw)))
     return {'exit_code':returncode,'timed_out':timed_out,'seconds':round(elapsed,2),'tests':tests,'passes':passes,'failures':failures,'ok':returncode==0 and tests>0 and passes==tests and not failures and not timed_out,'infrastructure_error':infrastructure,'isolation':'Docker: no network, read-only source, non-root, no capabilities, CPU/memory/PID limits','image':case.image}
 
 
@@ -57,7 +57,9 @@ def docker_execute(root,case,args=None,exit_only=False):
     command=[*docker_prefix(),'run','--rm','--pull=never','--name',name,'--network=none','--read-only','--user','1000:1000','--cap-drop=ALL','--security-opt=no-new-privileges','--pids-limit=96','--memory=768m','--memory-swap=768m','--cpus=1','--ulimit','nofile=256:256','--ulimit','fsize=16777216:16777216','--mount',f'type=bind,src={root},dst=/app,readonly','--tmpfs','/tmp:rw,nosuid,nodev,size=64m,mode=1777','--workdir','/app','--env','HOME=/tmp','--env','V8R_CACHE_NAME=rescue-test','--env','NO_COLOR=1']
     for path in case.writable_dirs:
         command+=['--tmpfs',f'/app/{path}:rw,nosuid,nodev,noexec,size=16m,mode=1777']
-    command += [case.image,'node',*(args or case.test_args)]
+    if case.language=='python':
+        command += ['--env','PYTHONPATH=/app/.rescue-python-packages:/app:/app/src','--env','PYTHONDONTWRITEBYTECODE=1','--env','PYTEST_DISABLE_PLUGIN_AUTOLOAD=1']
+    command += [case.image,'python' if case.language=='python' else 'node',*(args or case.test_args)]
     start=time.monotonic();timed_out=False
     with tempfile.TemporaryFile(mode='w+') as output:
         proc=subprocess.Popen(command,stdout=output,stderr=subprocess.STDOUT,start_new_session=True)

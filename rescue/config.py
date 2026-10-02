@@ -22,6 +22,9 @@ class Case(BaseModel):
     test_args:list[str]=Field(min_length=2,max_length=30)
     test_migration_files:list[str]=Field(default_factory=list,max_length=10)
     additional_test_args:list[list[str]]=Field(default_factory=list,max_length=5)
+    project_dir:str=''
+    python_manifest:str=Field(default='requirements.txt',pattern=r'^(requirements.txt|pyproject.toml)$')
+    language:str=Field(default='node',pattern=r'^(node|python)$')
     reporter:str='mocha'
     image:str='node:18-bullseye@sha256:0d9e9a8dcd5a83ea737ed92227a6591a31ad70c8bb722b0c51aff7ae23a88b6a'
     writable_dirs:list[str]=Field(default_factory=list)
@@ -32,7 +35,7 @@ class Case(BaseModel):
     max_edits:int=Field(default=3,ge=1,le=5)
     timeout:int=Field(default=90,ge=5,le=300)
 
-    @field_validator('template_dir')
+    @field_validator('template_dir','project_dir')
     @classmethod
     def safe_template(cls,v):
         p=PurePosixPath(v)
@@ -51,7 +54,7 @@ class Case(BaseModel):
     @field_validator('reporter')
     @classmethod
     def reporter_known(cls,v):
-        if v not in ['mocha','tap','jest']:
+        if v not in ['mocha','tap','jest','pytest']:
             raise ValueError('Unsupported reporter')
         return v
 
@@ -62,11 +65,19 @@ class Case(BaseModel):
             raise ValueError('Template escapes data root')
         return path
 
+    @property
+    def dependency_files(self):
+        return [self.python_manifest,'rescue-python.lock.json'] if self.language=='python' else ['package.json','package-lock.json']
+
+    def repository_path(self,name):
+        return self.project_dir.rstrip('/')+'/'+name if self.project_dir else name
+
     def version(self,root):
+        if self.language=='python':return json.loads((root/'.rescue-python-versions.json').read_text())[self.dependency]
         return json.loads((root/'node_modules'/self.dependency/'package.json').read_text())['version']
 
     def public(self):
-        return {'id':self.id,'repository':self.repository,'base_commit':self.base_commit,'dependency':self.dependency,'from':self.old_version,'to':self.target_version,'license':self.license,'scope':self.evaluation_role,'ready':all((self.templates/n/'node_modules'/self.dependency/'package.json').is_file() for n in ['baseline','upgraded'])}
+        return {'id':self.id,'repository':self.repository,'base_commit':self.base_commit,'dependency':self.dependency,'from':self.old_version,'to':self.target_version,'license':self.license,'scope':self.evaluation_role,'ready':all((self.templates/n/('.rescue-python-versions.json' if self.language=='python' else 'node_modules/'+self.dependency+'/package.json')).is_file() for n in ['baseline','upgraded'])}
 
 
 def cases():

@@ -1,0 +1,180 @@
+{
+  "run_id": "21d128381352473f9659a5703ecbc291",
+  "case_id": "python-httpx-validation",
+  "status": "awaiting_approval",
+  "events": [
+    {
+      "node": "intake",
+      "detail": "Pinned encode/httpx@000000000000; isolated workspace created"
+    },
+    {
+      "node": "baseline",
+      "detail": "2/2 baseline tests passed"
+    },
+    {
+      "node": "upgrade",
+      "detail": "Applied pinned upgrade to httpx 0.28.1"
+    },
+    {
+      "node": "reproduce",
+      "detail": "1 failures; regression reproduced=True"
+    },
+    {
+      "node": "investigate",
+      "detail": "Compared original and upgraded package APIs; retrieved 5 bounded evidence sections"
+    },
+    {
+      "node": "diagnose",
+      "detail": "Model proposed a structured source repair"
+    },
+    {
+      "node": "normalize",
+      "detail": "Candidate needs no import binding normalization"
+    },
+    {
+      "node": "apply",
+      "detail": "Validated exact-match source edits: client.py"
+    },
+    {
+      "node": "verify",
+      "detail": "2/2 tests passed; integrity=True"
+    },
+    {
+      "node": "evidence",
+      "detail": "Diff, target version, test counts and integrity bound to an approval digest"
+    }
+  ],
+  "baseline": {
+    "exit_code": 0,
+    "timed_out": false,
+    "seconds": 0.85,
+    "tests": 2,
+    "passes": 2,
+    "failures": [],
+    "ok": true,
+    "infrastructure_error": false,
+    "isolation": "Docker: no network, read-only source, non-root, no capabilities, CPU/memory/PID limits",
+    "image": "python:3.11-slim@sha256:bab1b7ef4b450c81002278d035eff85ebe394ae94df904f7a3ba14f7e16e487b",
+    "additional_checks": []
+  },
+  "broken": {
+    "exit_code": 1,
+    "timed_out": false,
+    "seconds": 0.75,
+    "tests": 2,
+    "passes": 1,
+    "failures": [
+      {
+        "title": "test_client.test_wsgi_response",
+        "message": "def test_wsgi_response():\n>       assert request_text() == \"ready\"\n\ntest_client.py:5: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\n    def request_text():\n        def app(environ, start_response):\n            start_response(\"200 OK\", [(\"Content-Type\", \"text/plain\")])\n            return [b\"ready\"]\n>       with httpx.Client(app=app, base_url=\"http://testserver\") as client:\nE       TypeError: Client.__init__() got an unexpected keyword argument 'app'\n\nclient.py:7: TypeError",
+        "stack": ""
+      }
+    ],
+    "ok": false,
+    "infrastructure_error": false,
+    "isolation": "Docker: no network, read-only source, non-root, no capabilities, CPU/memory/PID limits",
+    "image": "python:3.11-slim@sha256:bab1b7ef4b450c81002278d035eff85ebe394ae94df904f7a3ba14f7e16e487b",
+    "additional_checks": []
+  },
+  "verification": {
+    "exit_code": 0,
+    "timed_out": false,
+    "seconds": 0.74,
+    "tests": 2,
+    "passes": 2,
+    "failures": [],
+    "ok": true,
+    "infrastructure_error": false,
+    "isolation": "Docker: no network, read-only source, non-root, no capabilities, CPU/memory/PID limits",
+    "image": "python:3.11-slim@sha256:bab1b7ef4b450c81002278d035eff85ebe394ae94df904f7a3ba14f7e16e487b",
+    "additional_checks": [],
+    "integrity_ok": true,
+    "dependency_version": "0.28.1"
+  },
+  "repair": {
+    "diagnosis": "In httpx 0.28.0, the `app` shortcut argument was removed from `httpx.Client` and `httpx.AsyncClient`. To make requests directly to a WSGI or ASGI application, you must now explicitly instantiate and pass an `httpx.WSGITransport` or `httpx.ASGITransport` to the `transport` argument.",
+    "edits": [
+      {
+        "path": "client.py",
+        "old": "    with httpx.Client(app=app, base_url=\"http://testserver\") as client:\n",
+        "new": "    with httpx.Client(transport=httpx.WSGITransport(app=app), base_url=\"http://testserver\") as client:\n"
+      }
+    ]
+  },
+  "model_usage": {
+    "model": "gemini-3.1-pro-preview",
+    "provider": "gemini",
+    "attempt": 1,
+    "thinking_enabled": false,
+    "chunks": [
+      {
+        "path": "client.py",
+        "line": 1,
+        "score": 25
+      }
+    ],
+    "input_tokens": 3209,
+    "output_tokens": 171,
+    "reasoning_tokens": 861,
+    "finish_reason": "STOP",
+    "valid": true
+  },
+  "attempts": 1,
+  "protected": "b1947fc40754669e55df59aceff87733d4588c9e38c3b934f94ae3c0b848af3f",
+  "sources": {
+    "client.py": "import httpx\n\ndef request_text():\n    def app(environ, start_response):\n        start_response(\"200 OK\", [(\"Content-Type\", \"text/plain\")])\n        return [b\"ready\"]\n    with httpx.Client(app=app, base_url=\"http://testserver\") as client:\n        return client.get(\"/\").text\n"
+  },
+  "patch": "--- a/client.py\n+++ b/client.py\n@@ -4,5 +4,5 @@\n     def app(environ, start_response):\n         start_response(\"200 OK\", [(\"Content-Type\", \"text/plain\")])\n         return [b\"ready\"]\n-    with httpx.Client(app=app, base_url=\"http://testserver\") as client:\n+    with httpx.Client(transport=httpx.WSGITransport(app=app), base_url=\"http://testserver\") as client:\n         return client.get(\"/\").text\n--- a/requirements.txt\n+++ b/requirements.txt\n@@ -1 +1 @@\n-httpx==0.27.2\n+httpx==0.28.1\n--- a/rescue-python.lock.json\n+++ b/rescue-python.lock.json\n@@ -1 +1 @@\n-{\"image\": \"python:3.11-slim@sha256:bab1b7ef4b450c81002278d035eff85ebe394ae94df904f7a3ba14f7e16e487b\", \"versions\": {\"anyio\": \"4.15.1\", \"certifi\": \"2026.7.22\", \"h11\": \"0.16.0\", \"httpcore\": \"1.0.9\", \"httpx\": \"0.27.2\", \"idna\": \"3.20\", \"iniconfig\": \"2.3.0\", \"packaging\": \"26.3\", \"pluggy\": \"1.6.0\", \"pytest\": \"8.3.5\", \"sniffio\": \"1.3.1\", \"typing-extensions\": \"4.16.0\"}, \"wheels\": {\"anyio-4.15.1-py3-none-any.whl\": \"6152fdbbf9a77fdec97731721bebf7c4c44f7c29b424b0065826173efc7ed101\", \"certifi-2026.7.22-py3-none-any.whl\": \"62f22742b58a1a33014a2b6b706588a8d7e2a88ae7bd1a6ebe8c992928483775\", \"h11-0.16.0-py3-none-any.whl\": \"63cf8bbe7522de3bf65932fda1d9c2772064ffb3dae62d55932da54b31cb6c86\", \"httpcore-1.0.9-py3-none-any.whl\": \"2d400746a40668fc9dec9810239072b40b4484b640a8c38fd654a024c7a1bf55\", \"httpx-0.27.2-py3-none-any.whl\": \"7bb2708e112d8fdd7829cd4243970f0c223274051cb35ee80c03301ee29a3df0\", \"idna-3.20-py3-none-any.whl\": \"ab7ae7122974553370f0bdb919e1a960b2cd1bc1ef0276416d896db81c14582c\", \"iniconfig-2.3.0-py3-none-any.whl\": \"f631c04d2c48c52b84d0d0549c99ff3859c98df65b3101406327ecc7d53fbf12\", \"packaging-26.3-py3-none-any.whl\": \"d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c\", \"pluggy-1.6.0-py3-none-any.whl\": \"e920276dd6813095e9377c0bc5566d94c932c33b27a3e3945d8389c374dd4746\", \"pytest-8.3.5-py3-none-any.whl\": \"c69214aa47deac29fad6c2a4f590b9c4a9fdb16a403176fe154b79c0b4d4d820\", \"sniffio-1.3.1-py3-none-any.whl\": \"2f6da418d1f1e0fddd844478f41680e794e6051915791a034ff65e5f100525a2\", \"typing_extensions-4.16.0-py3-none-any.whl\": \"481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8\"}}+{\"image\": \"python:3.11-slim@sha256:bab1b7ef4b450c81002278d035eff85ebe394ae94df904f7a3ba14f7e16e487b\", \"versions\": {\"anyio\": \"4.15.1\", \"certifi\": \"2026.7.22\", \"h11\": \"0.16.0\", \"httpcore\": \"1.0.9\", \"httpx\": \"0.28.1\", \"idna\": \"3.20\", \"iniconfig\": \"2.3.0\", \"packaging\": \"26.3\", \"pluggy\": \"1.6.0\", \"pytest\": \"8.3.5\", \"typing-extensions\": \"4.16.0\"}, \"wheels\": {\"anyio-4.15.1-py3-none-any.whl\": \"6152fdbbf9a77fdec97731721bebf7c4c44f7c29b424b0065826173efc7ed101\", \"certifi-2026.7.22-py3-none-any.whl\": \"62f22742b58a1a33014a2b6b706588a8d7e2a88ae7bd1a6ebe8c992928483775\", \"h11-0.16.0-py3-none-any.whl\": \"63cf8bbe7522de3bf65932fda1d9c2772064ffb3dae62d55932da54b31cb6c86\", \"httpcore-1.0.9-py3-none-any.whl\": \"2d400746a40668fc9dec9810239072b40b4484b640a8c38fd654a024c7a1bf55\", \"httpx-0.28.1-py3-none-any.whl\": \"d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad\", \"idna-3.20-py3-none-any.whl\": \"ab7ae7122974553370f0bdb919e1a960b2cd1bc1ef0276416d896db81c14582c\", \"iniconfig-2.3.0-py3-none-any.whl\": \"f631c04d2c48c52b84d0d0549c99ff3859c98df65b3101406327ecc7d53fbf12\", \"packaging-26.3-py3-none-any.whl\": \"d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c\", \"pluggy-1.6.0-py3-none-any.whl\": \"e920276dd6813095e9377c0bc5566d94c932c33b27a3e3945d8389c374dd4746\", \"pytest-8.3.5-py3-none-any.whl\": \"c69214aa47deac29fad6c2a4f590b9c4a9fdb16a403176fe154b79c0b4d4d820\", \"typing_extensions-4.16.0-py3-none-any.whl\": \"481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8\"}}",
+  "evidence_digest": "626775542b6d012895604856828debb2f0502c242d9e3ee8fa3dad2df2def508",
+  "error": "",
+  "environment_digest": "21fe1c8b7f28e199cbf95ae3ea02e12ce8c66df97ba184e365e59b0edb083252",
+  "verified_sources": "2f9d982edc0a2bf4ceea2b6f2b33d9f86a9a105a0b9f20ce17ed0c5aa5094c23",
+  "case_digest": "6faadbed324d090e95fe15547078e7f17238190a2525aca1e05c9a53492ce85f",
+  "model_calls": [
+    {
+      "model": "gemini-3.1-pro-preview",
+      "provider": "gemini",
+      "attempt": 1,
+      "thinking_enabled": false,
+      "chunks": [
+        {
+          "path": "client.py",
+          "line": 1,
+          "score": 25
+        }
+      ],
+      "input_tokens": 3209,
+      "output_tokens": 171,
+      "reasoning_tokens": 861,
+      "finish_reason": "STOP",
+      "valid": true
+    }
+  ],
+  "api_evidence": [
+    {
+      "file": "httpx-0.28.1.dist-info/METADATA",
+      "kind": "installed Python API",
+      "text": "Metadata-Version: 2.3\nName: httpx\nVersion: 0.28.1\nSummary: The next generation HTTP client.\nProject-URL: Changelog, https://github.com/encode/httpx/blob/master/CHANGELOG.md\nProject-URL: Documentation, https://www.python-httpx.org\nProject-URL: Homepage, https://github.com/encode/httpx\nProject-URL: Source, https://github.com/encode/httpx\nAuthor-email: Tom Christie <tom@tomchristie.com>\nLicense: BSD-3-Clause\nClassifier: Development Status :: 4 - Beta\nClassifier: Environment :: Web Environment\nClassifier: Framework :: AsyncIO\nClassifier: Framework :: Trio\nClassifier: Intended Audience :: Developers\nClassifier: License :: OSI Approved :: BSD License\nClassifier: Operating System :: OS Independent\nClassifier: Programming Language :: Python :: 3\nClassifier: Programming Language :: Python :: 3 :: Only\nClassifier: Programming Language :: Python :: 3.8\nClassifier: Programming Language :: Python :: 3.9\nClassifier: Programming Language :: Python :: 3.10\nClassifier: Programming Language :: Python :: 3.11\nClassifier: Programming Language :: Python :: 3.12\nClassifier: Topic :: Internet :: WWW/HTTP\nRequires-Python: >=3.8\nRequires-Dist: anyio\nRequires-Dist: certifi\nRequires-Dist: httpcore==1.*\nRequires-Dist: idna\nProvides-Extra: brotli\nRequires-Dist: brotli; (platform_python_implementation == 'CPython') and extra == 'brotli'\nRequires-Dist: brotlicffi; (platform_python_implementation != 'CPython') and extra == 'brotli'\nProvides-Extra: cli\nRequires-Dist: click==8.*; extra == 'cli'\nRequires-Dist:"
+    },
+    {
+      "file": "httpx/_decoders.py",
+      "kind": "installed Python API",
+      "text": "\"\"\"\nHandlers for Content-Encoding.\n\nSee: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Encoding\n\"\"\"\n\nfrom __future__ import annotations\n\nimport codecs\nimport io\nimport typing\nimport zlib\n\nfrom ._exceptions import DecodingError\n\n# Brotli support is optional\ntry:\n    # The C bindings in `brotli` are recommended for CPython.\n    import brotli\nexcept ImportError:  # pragma: no cover\n    try:\n        # The CFFI bindings in `brotlicffi` are recommended for PyPy\n        # and other environments.\n        import brotlicffi as brotli\n    except ImportError:\n        brotli = None\n\n\n# Zstandard support is optional\ntry:\n    import zstandard\nexcept ImportError:  # pragma: no cover\n    zstandard = None  # type: ignore\n\n\nclass ContentDecoder:\n    def decode(self, data: bytes) -> bytes:\n        raise NotImplementedError()  # pragma: no cover\n\n    def flush(self) -> bytes:\n        raise NotImplementedError()  # pragma: no cover\n\n\nclass IdentityDecoder(ContentDecoder):\n    \"\"\"\n    Handle unencoded data.\n    \"\"\"\n\n    def decode(self, data: bytes) -> bytes:\n        return data\n\n    def flush(self) -> bytes:\n        return b\"\"\n\n\nclass DeflateDecoder(ContentDecoder):\n    \"\"\"\n    Handle 'deflate' decoding.\n\n    See: https://stackoverflow.com/questions/1838699\n    \"\"\"\n\n    def __init__(self) -> None:\n        self.first_attempt = True\n        self.decompressor = zlib.decompressobj()\n\n    def decode(self, data: bytes) -> bytes:\n        was_first_attempt = self.first_attempt\n        "
+    },
+    {
+      "file": "httpx/_types.py",
+      "kind": "installed Python API",
+      "text": "\"\"\"\nType definitions for type checking purposes.\n\"\"\"\n\nfrom http.cookiejar import CookieJar\nfrom typing import (\n    IO,\n    TYPE_CHECKING,\n    Any,\n    AsyncIterable,\n    AsyncIterator,\n    Callable,\n    Dict,\n    Iterable,\n    Iterator,\n    List,\n    Mapping,\n    Optional,\n    Sequence,\n    Tuple,\n    Union,\n)\n\nif TYPE_CHECKING:  # pragma: no cover\n    from ._auth import Auth  # noqa: F401\n    from ._config import Proxy, Timeout  # noqa: F401\n    from ._models import Cookies, Headers, Request  # noqa: F401\n    from ._urls import URL, QueryParams  # noqa: F401\n\n\nPrimitiveData = Optional[Union[str, int, float, bool]]\n\nURLTypes = Union[\"URL\", str]\n\nQueryParamTypes = Union[\n    \"QueryParams\",\n    Mapping[str, Union[PrimitiveData, Sequence[PrimitiveData]]],\n    List[Tuple[str, PrimitiveData]],\n    Tuple[Tuple[str, PrimitiveData], ...],\n    str,\n    bytes,\n]\n\nHeaderTypes = Union[\n    \"Headers\",\n    Mapping[str, str],\n    Mapping[bytes, bytes],\n    Sequence[Tuple[str, str]],\n    Sequence[Tuple[bytes, bytes]],\n]\n\nCookieTypes = Union[\"Cookies\", CookieJar, Dict[str, str], List[Tuple[str, str]]]\n\nTimeoutTypes = Union[\n    Optional[float],\n    Tuple[Optional[float], Optional[float], Optional[float], Optional[float]],\n    \"Timeout\",\n]\nProxyTypes = Union[\"URL\", str, \"Proxy\"]\nCertTypes = Union[str, Tuple[str, str], Tuple[str, str, str]]\n\nAuthTypes = Union[\n    Tuple[Union[str, bytes], Union[str, bytes]],\n    Callable[[\"Request\"], \"Request\"],\n    \"Auth\",\n]\n\nRequestContent = Union[str, bytes"
+    },
+    {
+      "file": "httpx/_main.py",
+      "kind": "installed Python API",
+      "text": "from __future__ import annotations\n\nimport functools\nimport json\nimport sys\nimport typing\n\nimport click\nimport pygments.lexers\nimport pygments.util\nimport rich.console\nimport rich.markup\nimport rich.progress\nimport rich.syntax\nimport rich.table\n\nfrom ._client import Client\nfrom ._exceptions import RequestError\nfrom ._models import Response\nfrom ._status_codes import codes\n\nif typing.TYPE_CHECKING:\n    import httpcore  # pragma: no cover\n\n\ndef print_help() -> None:\n    console = rich.console.Console()\n\n    console.print(\"[bold]HTTPX :butterfly:\", justify=\"center\")\n    console.print()\n    console.print(\"A next generation HTTP client.\", justify=\"center\")\n    console.print()\n    console.print(\n        \"Usage: [bold]httpx[/bold] [cyan]<URL> [OPTIONS][/cyan] \", justify=\"left\"\n    )\n    console.print()\n\n    table = rich.table.Table.grid(padding=1, pad_edge=True)\n    table.add_column(\"Parameter\", no_wrap=True, justify=\"left\", style=\"bold\")\n    table.add_column(\"Description\")\n    table.add_row(\n        \"-m, --method [cyan]METHOD\",\n        \"Request method, such as GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD.\\n\"\n        \"[Default: GET, or POST if a request body is included]\",\n    )\n    table.add_row(\n        \"-p, --params [cyan]<NAME VALUE> ...\",\n        \"Query parameters to include in the request URL.\",\n    )\n    table.add_row(\n        \"-c, --content [cyan]TEXT\", \"Byte content to include in the request body.\"\n    )\n    table.add_row(\n        \"-d, --data [cyan]<NAME VALUE> ...\", \"Form "
+    },
+    {
+      "file": "httpx/_urls.py",
+      "kind": "installed Python API",
+      "text": "from __future__ import annotations\n\nimport typing\nfrom urllib.parse import parse_qs, unquote, urlencode\n\nimport idna\n\nfrom ._types import QueryParamTypes\nfrom ._urlparse import urlparse\nfrom ._utils import primitive_value_to_str\n\n__all__ = [\"URL\", \"QueryParams\"]\n\n\nclass URL:\n    \"\"\"\n    url = httpx.URL(\"HTTPS://jo%40email.com:a%20secret@m\u00fcller.de:1234/pa%20th?search=ab#anchorlink\")\n\n    assert url.scheme == \"https\"\n    assert url.username == \"jo@email.com\"\n    assert url.password == \"a secret\"\n "
+    }
+  ]
+}

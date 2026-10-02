@@ -75,7 +75,14 @@ def check_new_capabilities(old,new):
     imports=r"(?:require\s*\(|from\s*|import\s*\()\s*['\"]([^'\"]+)['\"]"
     if set(re.findall(imports,new))-set(re.findall(imports,old)):
         raise ValueError('Repair introduces a new module dependency')
+    python_imports=r'(?m)^\s*(?:from\s+([\w.]+)\s+import|import\s+([\w.]+))'
+    if set(re.findall(python_imports,new))-set(re.findall(python_imports,old)):
+        raise ValueError('Repair introduces a new module dependency')
     patterns=[
+        r'\b(?:exec|compile|__import__)\s*\(',
+        r'\b(?:subprocess|socket|urllib|requests)\s*\.',
+        r'\bos\s*\.\s*(?:system|popen|environ|putenv|remove|unlink|exec\w*|spawn\w*)\b',
+        r'\b(?:sys\.exit|shutil\.rmtree|pickle\.loads)\b',
         r'\b(?:axios|superagent|undici)\b',
         r'\b(?:child_process|worker_threads|node:vm)\b',
         r"(?:require\s*\(|from\s*|import\s*\()\s*['\"](?:node:)?(?:fs(?:/promises)?|http2?|https|net|tls|dgram|dns|vm)['\"]",

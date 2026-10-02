@@ -28,7 +28,7 @@ langgraph-sdk==0.4.4
 langsmith==0.12.4
 orjson==3.12.0
 ormsgpack==1.12.2
-packaging==26.3
+packaging==26.0
 pluggy==1.6.0
 pycparser==3.0
 pydantic==2.13.5
@@ -52,3 +52,4 @@ uvicorn==0.52.4
 websockets==16.1.1
 xxhash==4.0.1
 zstandard==0.25.0
+tomli-w==1.2.0

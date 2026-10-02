@@ -45,19 +45,19 @@ def publish(case,state,root,client=None):
                 if value.get('truncated'):raise ValueError('Repository tree exceeds delivery review limit')
                 return {p['path']:(p['mode'],p['type'],p['sha']) for p in value['tree'] if p['type']!='tree'}
             expected=tree_map(commit['tree']['sha'])
-            for name in [*state['sources'],'package.json','package-lock.json',*case.test_migration_files]:
+            for name in [*state['sources'],*case.dependency_files,*case.test_migration_files]:
                 data=(root/name).read_bytes();sha=hashlib.sha1(b'blob '+str(len(data)).encode()+b'\0'+data).hexdigest()
-                expected[name]=('100755' if (root/name).stat().st_mode&0o111 else '100644','blob',sha)
+                expected[case.repository_path(name)]=('100755' if (root/name).stat().st_mode&0o111 else '100644','blob',sha)
             if tree_map(previous['tree']['sha'])!=expected:
                 raise ValueError('Existing delivery content differs from approved evidence')
             return {'url':existing[0]['html_url'],'number':existing[0]['number'],'reused':True}
         entries=[]
-        for name in [*state['sources'],'package.json','package-lock.json',*case.test_migration_files]:
+        for name in [*state['sources'],*case.dependency_files,*case.test_migration_files]:
             content=(root/name).read_text()
             if name in state['sources'] and content==state['sources'][name]:
                 continue
             blob=request('POST','/git/blobs',json={'content':content,'encoding':'utf-8'})
-            entries.append({'path':name,'mode':'100755' if (root/name).stat().st_mode&0o111 else '100644','type':'blob','sha':blob['sha']})
+            entries.append({'path':case.repository_path(name),'mode':'100755' if (root/name).stat().st_mode&0o111 else '100644','type':'blob','sha':blob['sha']})
         tree=request('POST','/git/trees',json={'base_tree':commit['tree']['sha'],'tree':entries})
         new_commit=request('POST','/git/commits',json={'message':f'Repair compatibility with {case.dependency} {case.target_version}','tree':tree['sha'],'parents':[case.base_commit]})
         branch_response=client.get(prefix+'/git/ref/heads/'+branch)

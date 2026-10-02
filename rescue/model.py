@@ -79,6 +79,19 @@ def _excerpts(text,terms,budget):
 
 
 def dependency_context(root,case,failure=None):
+    if getattr(case,'language','node')=='python':
+        from .python_profile import PACKAGES
+        folder=root/PACKAGES;budget=6500;evidence=[];module=case.dependency.replace('-','_')
+        paths=list(folder.glob(module+'*.dist-info/METADATA'))+list((folder/module).glob('*.py'))
+        for path in paths[:8]:
+            if path.is_file() and not path.is_symlink() and path.resolve().is_relative_to(folder.resolve()):
+                name=str(path.relative_to(folder));new=_read(folder,name)
+                old=_read(case.templates/'baseline'/PACKAGES,name)
+                delta=''.join(difflib.unified_diff(old.splitlines(True),new.splitlines(True),n=3)) if old else ''
+                text=_excerpts(delta or new,{case.dependency,*re.findall(r'[A-Za-z_][A-Za-z_0-9]{3,}',json.dumps(failure or {}))},min(1500,budget))
+                evidence.append({'file':name,'kind':'version diff' if delta else 'installed Python API','text':text});budget-=len(text)
+            if budget<=0:break
+        return evidence
     current=root/'node_modules'/case.dependency
     previous=case.templates/'baseline/node_modules'/case.dependency
     if not current.resolve().is_relative_to(root.resolve()) or not previous.resolve().is_relative_to((case.templates/'baseline').resolve()):

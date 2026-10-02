@@ -48,9 +48,15 @@ def case(s):
     return get_case(s.get('case_id','v8r-js-yaml'))
 
 
+def case_digest(selected):
+    # New default Python fields do not invalidate existing Node review evidence.
+    excluded={'language','python_manifest','project_dir'} if selected.language=='node' and not selected.project_dir else set()
+    return hashlib.sha256(selected.model_dump_json(exclude=excluded).encode()).hexdigest()
+
+
 def environment_digest(root):
     # Includes installed dependency content. Cache is the only mutable package directory.
-    paths=[p for p in (root/'node_modules').rglob('*') if p.is_file() and '.cache' not in p.parts]
+    paths=[p for folder in ['node_modules','.rescue-python-packages'] for p in (root/folder).rglob('*') if p.is_file() and '.cache' not in p.parts]
     return digest_files(root,paths)
 
 
@@ -157,7 +163,7 @@ def verify(s):
     result['integrity_ok']=intact
     result['dependency_version']=installed
     result['ok']=result['ok'] and intact and installed==selected.target_version and result['tests']==s['baseline']['tests']
-    metadata={'verification':result,'verified_sources':before,'case_digest':hashlib.sha256(selected.model_dump_json().encode()).hexdigest(),**event('verify',f"{result['passes']}/{result['tests']} tests passed; integrity={intact}")}
+    metadata={'verification':result,'verified_sources':before,'case_digest':case_digest(selected),**event('verify',f"{result['passes']}/{result['tests']} tests passed; integrity={intact}")}
     if result.get('infrastructure_error') or result.get('timed_out'):
         metadata.update(status='blocked',error='Verification infrastructure failed or exceeded its execution limit')
     return metadata
@@ -174,12 +180,16 @@ def route_verification(s):
 def evidence(s):
     root=workspace(s)
     patch=''
-    for name in [*s['sources'],'package.json','package-lock.json']:
+    for name in [*s['sources'],*case(s).dependency_files]:
         original=ROOT/'bootstrap'/case(s).id/'base'/name
         if name not in ['package.json','package-lock.json'] or not original.is_file():original=case(s).templates/'baseline'/name
-        old=original.read_text().splitlines(keepends=True)
+        if case(s).language=='python' and name=='rescue-python.lock.json':
+            original_lock=case(s).templates/'baseline'/'.rescue-original-lock.txt'
+            old=original_lock.read_text().splitlines(keepends=True) if original_lock.exists() else []
+        else:old=original.read_text().splitlines(keepends=True)
         new=(root/name).read_text().splitlines(keepends=True)
-        patch+=''.join(difflib.unified_diff(old,new,fromfile='a/'+name if old else '/dev/null',tofile='b/'+name))
+        repo_name=case(s).repository_path(name)
+        patch+=''.join(difflib.unified_diff(old,new,fromfile='a/'+repo_name if old else '/dev/null',tofile='b/'+repo_name))
     if case(s).test_migration_files:
         patch+=(ROOT/'bootstrap'/case(s).id/'test-migration.patch').read_text()
     bound={'patch':patch,'verification':s['verification'],'environment_digest':s['environment_digest'],'protected_digest':s['protected'],'source_digest':s['verified_sources'],'case':case(s).model_dump()}
@@ -199,7 +209,7 @@ def export(s):
     if not all(s.get(key) for key in ['environment_digest','verified_sources','case_digest']):
         return {'status':'blocked','error':'Legacy evidence lacks current integrity metadata; rerun verification',**event('export','Incomplete evidence refused')}
     inventory={str(p.relative_to(root)) for p in source_files(root,selected.source_globs)}
-    if inventory!=set(s['sources']) or ('verified_sources' in s and digest_files(root,source_files(root,selected.source_globs))!=s['verified_sources']) or ('case_digest' in s and hashlib.sha256(selected.model_dump_json().encode()).hexdigest()!=s['case_digest']):
+    if inventory!=set(s['sources']) or ('verified_sources' in s and digest_files(root,source_files(root,selected.source_globs))!=s['verified_sources']) or ('case_digest' in s and s['case_digest'] not in {case_digest(selected),hashlib.sha256(selected.model_dump_json().encode()).hexdigest()}):
         return {'status':'blocked','error':'Source inventory or case definition changed since verification',**event('export','Stale evidence refused')}
     # Approval cannot bless a workspace changed after tests.
     expected={name:content for name,content in s['sources'].items()}

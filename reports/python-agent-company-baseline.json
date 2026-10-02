@@ -1,0 +1,38 @@
+{
+  "repository": "niteshnankani-svg/agent-company",
+  "commit": "d58eefc194a80cc40e88b687028842fb0510773c",
+  "result": {
+    "exit_code": 2,
+    "timed_out": false,
+    "seconds": 2.82,
+    "tests": 4,
+    "passes": 0,
+    "failures": [
+      {
+        "title": ".test_cap_logic",
+        "message": "test_cap_logic.py:1: in <module>\n    from graph import MAX_RETRIES, route_after_verifier\ngraph.py:5: in <module>\n    from orchestrator import orchestrator_node\norchestrator.py:23: in <module>\n    typesafe_client = TypeSafeClient()\n.rescue-python-packages/typesafe_sdk/_core/client/sync/client.py:85: in __init__\n    self._config = Config.resolve(api_key, base_url, model, timeout, headers)\n.rescue-python-packages/typesafe_sdk/_core/config.py:60: in resolve\n    resolve_and_validate_api_key(api_key),\n.rescue-python-packages/typesafe_sdk/_core/config.py:30: in resolve_and_validate_api_key\n    raise TypeSafeError(f\"No API key was provided. Pass api_key or set the {API_KEY_ENV} environment variable.\")\nE   typesafe_sdk._core.errors.TypeSafeError: No API key was provided. Pass api_key or set the TYPESAFE_API_KEY environment variable.",
+        "stack": ""
+      },
+      {
+        "title": ".test_graph",
+        "message": "test_graph.py:1: in <module>\n    from graph import MAX_RETRIES, build_graph, build_initial_state\ngraph.py:5: in <module>\n    from orchestrator import orchestrator_node\norchestrator.py:23: in <module>\n    typesafe_client = TypeSafeClient()\n.rescue-python-packages/typesafe_sdk/_core/client/sync/client.py:85: in __init__\n    self._config = Config.resolve(api_key, base_url, model, timeout, headers)\n.rescue-python-packages/typesafe_sdk/_core/config.py:60: in resolve\n    resolve_and_validate_api_key(api_key),\n.rescue-python-packages/typesafe_sdk/_core/config.py:30: in resolve_and_validate_api_key\n    raise TypeSafeError(f\"No API key was provided. Pass api_key or set the {API_KEY_ENV} environment variable.\")\nE   typesafe_sdk._core.errors.TypeSafeError: No API key was provided. Pass api_key or set the TYPESAFE_API_KEY environment variable.",
+        "stack": ""
+      },
+      {
+        "title": ".test_hr",
+        "message": "test_hr.py:11: in <module>\n    from hr_complaints import hr_cache, hr_head_node\nhr_complaints.py:24: in <module>\n    typesafe_client = TypeSafeClient()\n.rescue-python-packages/typesafe_sdk/_core/client/sync/client.py:85: in __init__\n    self._config = Config.resolve(api_key, base_url, model, timeout, headers)\n.rescue-python-packages/typesafe_sdk/_core/config.py:60: in resolve\n    resolve_and_validate_api_key(api_key),\n.rescue-python-packages/typesafe_sdk/_core/config.py:30: in resolve_and_validate_api_key\n    raise TypeSafeError(f\"No API key was provided. Pass api_key or set the {API_KEY_ENV} environment variable.\")\nE   typesafe_sdk._core.errors.TypeSafeError: No API key was provided. Pass api_key or set the TYPESAFE_API_KEY environment variable.",
+        "stack": ""
+      },
+      {
+        "title": ".test_sequential",
+        "message": "test_sequential.py:9: in <module>\n    from graph import build_graph\ngraph.py:5: in <module>\n    from orchestrator import orchestrator_node\norchestrator.py:23: in <module>\n    typesafe_client = TypeSafeClient()\n.rescue-python-packages/typesafe_sdk/_core/client/sync/client.py:85: in __init__\n    self._config = Config.resolve(api_key, base_url, model, timeout, headers)\n.rescue-python-packages/typesafe_sdk/_core/config.py:60: in resolve\n    resolve_and_validate_api_key(api_key),\n.rescue-python-packages/typesafe_sdk/_core/config.py:30: in resolve_and_validate_api_key\n    raise TypeSafeError(f\"No API key was provided. Pass api_key or set the {API_KEY_ENV} environment variable.\")\nE   typesafe_sdk._core.errors.TypeSafeError: No API key was provided. Pass api_key or set the TYPESAFE_API_KEY environment variable.",
+        "stack": ""
+      }
+    ],
+    "ok": false,
+    "infrastructure_error": false,
+    "isolation": "Docker: no network, read-only source, non-root, no capabilities, CPU/memory/PID limits",
+    "image": "python:3.11-slim@sha256:bab1b7ef4b450c81002278d035eff85ebe394ae94df904f7a3ba14f7e16e487b",
+    "additional_checks": []
+  }
+}
