@@ -8,7 +8,17 @@ function notice(message, error = false) { $('notice').textContent = message; $('
 async function api(path, options = {}) {
   const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 20000);
   try {
-    const response = await fetch(path, {...options, signal:controller.signal, headers:{'Content-Type':'application/json',...options.headers}});
+    const requestOptions = {...options, signal:controller.signal, headers:{'Content-Type':'application/json',...options.headers}};
+    let response = await fetch(path, requestOptions);
+    // Only a rejected request is retried. Loopback development may renew its
+    // existing HttpOnly session; production still requires explicit login.
+    if (response.status === 401 && !options.headers?.Authorization) {
+      const bootstrap = await fetch('/', {signal:controller.signal,cache:'no-store'});
+      if (bootstrap.ok && bootstrap.headers.get('X-Rescue-Local-Session') === 'renewed') {
+        response = await fetch(path, requestOptions);
+        if (response.ok) { $('login').hidden = true; notice('Local session restored.'); }
+      }
+    }
     const body = await response.json().catch(() => ({}));
     if (!response.ok) {
       if (response.status === 401) $('login').hidden = false;

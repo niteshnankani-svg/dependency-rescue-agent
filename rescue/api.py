@@ -144,6 +144,7 @@ def home(request:Request):
     response=FileResponse(ROOT/'rescue/static/index.html')
     if LOCAL and request.client and request.client.host in ['127.0.0.1','::1','testclient']:
         response.set_cookie('rescue_session',TOKEN,httponly=True,samesite='strict',max_age=3600)
+        response.headers['X-Rescue-Local-Session']='renewed'
     return response
 
 

@@ -132,3 +132,27 @@ def test_execution_failure_redacts_secrets_before_storage(monkeypatch):
     key='test-private-configured-secret-1234';monkeypatch.setenv('GEMINI_API_KEY',key)
     result=parse_result('failure: '+key,1,1,SimpleNamespace(image='pinned-image'))
     assert key not in json.dumps(result) and '[REDACTED]' in json.dumps(result)
+
+
+def test_expired_local_session_can_bootstrap_again(monkeypatch):
+    monkeypatch.setattr(api,'LOCAL',True)
+    client=TestClient(api.app)
+    assert client.get('/api/cases').status_code==401
+    bootstrap=client.get('/')
+    assert bootstrap.headers['X-Rescue-Local-Session']=='renewed'
+    assert client.get('/api/cases').status_code==200
+    client.cookies.clear()
+    assert client.get('/api/cases').status_code==401
+    client.get('/')
+    assert client.get('/api/cases').status_code==200
+
+
+def test_bootstrap_does_not_grant_remote_or_production_access(monkeypatch):
+    monkeypatch.setattr(api,'LOCAL',False)
+    response=TestClient(api.app).get('/')
+    assert 'X-Rescue-Local-Session' not in response.headers
+    assert 'set-cookie' not in response.headers
+    monkeypatch.setattr(api,'LOCAL',True)
+    response=TestClient(api.app,client=('198.51.100.1',50000)).get('/')
+    assert 'X-Rescue-Local-Session' not in response.headers
+    assert 'set-cookie' not in response.headers

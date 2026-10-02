@@ -57,3 +57,7 @@ The design uses original SVG circuit artwork and a bento-style composition inspi
 Before enabling remote repair operations, deploy the persistent API and worker described in DEPLOYMENT.md. Integrate an authenticated same-origin gateway, validate Origin/Host handling against the existing CSRF policy, and verify secure cookie login, roles, and review actions end-to-end. Do not embed API tokens in client JavaScript or weaken origin checks to make a proxy work.
 
 Verification: 86 backend tests passed after the frontend update; npm reported zero dependency vulnerabilities. Browser checks passed on the published site at desktop and 390px mobile widths, including the motion toggle, disabled repair action, explicit disconnected state, and no console errors during the exercised flows.
+
+### Expired local session recovery
+
+Local development cookies expire after one hour. On an API 401, the client reloads the existing homepage bootstrap in the background and retries the rejected request once only when the server explicitly confirms a loopback development session. Production and non-loopback requests receive no automatic session. Mutation retries preserve the original idempotency key; successful responses and network failures are never replayed. Coverage: `node --test frontend/session.test.cjs` and the Python authentication tests.
