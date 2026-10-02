@@ -6,7 +6,7 @@ import shutil
 import tempfile
 import threading
 from fastapi import FastAPI, HTTPException, Request
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from .config import get_case
 from .execution import docker_execute
 from .guards import source_files,snapshot_digest
@@ -16,6 +16,7 @@ LOCK=threading.BoundedSemaphore(1)
 
 
 class Execution(BaseModel):
+    model_config=ConfigDict(extra="forbid")
     case_id:str=Field(max_length=70)
     phase:str=Field(pattern='^(baseline|upgraded)$')
     files:dict[str,str]
@@ -38,7 +39,7 @@ def health():
 async def execute(request:Request):
     expected=os.getenv('RESCUE_EXECUTOR_TOKEN','')
     supplied=request.headers.get('authorization','').removeprefix('Bearer ')
-    if len(expected)<32 or not hmac.compare_digest(expected,supplied):
+    if len(expected)<32 or not supplied.isascii() or len(supplied)>8192 or not hmac.compare_digest(expected,supplied):
         raise HTTPException(401,'Executor authentication failed')
     data=bytearray()
     async for part in request.stream():

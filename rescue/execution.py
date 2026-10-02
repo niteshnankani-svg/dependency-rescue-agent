@@ -10,6 +10,7 @@ import time
 import uuid
 import httpx
 from .guards import source_files,snapshot_digest
+from .security import redact_text
 
 MAX_OUTPUT=1_000_000
 
@@ -42,6 +43,7 @@ def parse_result(raw,returncode,elapsed,case,timed_out=False):
                 failures.append({'message':suite.get('message','')[:5000]})
     if not payload:
         failures=[{'message':raw[-7000:] or 'No test report produced'}]
+    failures=[{k:redact_text(v) if isinstance(v,str) else v for k,v in failure.items()} for failure in failures]
     infrastructure=returncode in [125,126,127] or (not payload and bool(re.search(r'Failed to initialize: unable to resolve docker endpoint|Cannot connect to the Docker daemon|error during connect:|Error response from daemon:|OCI runtime .*failed',raw)))
     return {'exit_code':returncode,'timed_out':timed_out,'seconds':round(elapsed,2),'tests':tests,'passes':passes,'failures':failures,'ok':returncode==0 and tests>0 and passes==tests and not failures and not timed_out,'infrastructure_error':infrastructure,'isolation':'Docker: no network, read-only source, non-root, no capabilities, CPU/memory/PID limits','image':case.image}
 

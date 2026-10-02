@@ -15,6 +15,8 @@ An operator selects a registered repository/upgrade and starts a repair. The des
 | `rescue/graph.py` | Durable LangGraph workflow and approval interrupt |
 | `rescue/providers.py` | Gemini, Anthropic, Ollama and compatible-provider configuration; environment-only credentials |
 | `rescue/model.py` | Bounded source retrieval, installed dependency API evidence, structured model requests |
+| `rescue/security.py` | Prompt-injection tripwires, credential screening/redaction and generated capability checks |
+| `rescue/http_security.py` | Bounded API request bodies, receive deadlines and per-client request limits |
 | `rescue/guards.py` | Credential-pattern preflight, allowed source edits, exact anchors, dangerous-edit checks and integrity hashes |
 | `rescue/execution.py` | Offline Docker runner, time/output/resource bounds, reporter parsing, remote worker client |
 | `rescue/executor_api.py` | Authenticated execution service on a dedicated worker VM |

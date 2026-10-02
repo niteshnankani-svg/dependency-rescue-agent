@@ -36,3 +36,8 @@ Deploy one API process with persistent storage and a separate dedicated disposab
 Anthropic support is implemented and protocol-tested, but no live Anthropic credential was available. Gemini was live-tested; its initial 2.5 Pro model was rejected by the provider despite appearing in model listings, so the provider-recommended 3.1 Pro preview was used. Availability checks alone do not establish generation access or repair accuracy. Preview model availability may change; configure an available model and rerun qualification before changing providers in production.
 
 Passing these tests does not establish general repair accuracy, multi-tenant isolation, high availability or absence of every semantic regression. Human review remains required; the application never automatically merges or deploys a repair.
+
+
+## Security hardening — 2026-10-02
+
+The expanded suite passes 86 tests, including adversarial prompt-injection, credential, unsafe-code, API-limit and cross-site-request cases (`reports/security-tests.xml`). All four frozen repairs pass the new evidence/output policies without modifying their original review workspaces (`reports/security-replay.json`). The running API passed security-header, oversized-request, cross-site-write, cookie-origin and private-directory checks (`reports/security-http-smoke.json`). Model quality results above are historical live evaluations; this security pass replays those artifacts and does not claim a new attack-resistance benchmark. See SECURITY.md for the threat model and remaining limitations.

@@ -17,8 +17,10 @@ from langgraph.types import Command
 from .graph import ROOT, RUNTIME, open_graph
 from .config import cases as registry
 from .auth import verify, require, validate_production
+from .http_security import RequestGuard
 
-RUNTIME.mkdir(exist_ok=True)
+RUNTIME.mkdir(exist_ok=True,mode=0o700)
+RUNTIME.chmod(0o700)
 TOKEN_PATH=RUNTIME/'.api-token'
 if not TOKEN_PATH.exists():
     fd=os.open(TOKEN_PATH,os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600)
@@ -91,6 +93,7 @@ async def lifespan(app):
 
 
 app=FastAPI(title='Dependency Rescue API',version='0.2.0',lifespan=lifespan)
+app.add_middleware(RequestGuard)
 app.add_middleware(TrustedHostMiddleware,allowed_hosts=os.getenv('RESCUE_ALLOWED_HOSTS','127.0.0.1,localhost,testserver').split(','))
 
 
@@ -100,6 +103,8 @@ def authorize(request: Request):
     if not supplied:
         raise HTTPException(401,'API token required')
     actor=verify(supplied,TOKEN)
+    if not bearer and request.method not in ['GET','HEAD','OPTIONS'] and not request.headers.get('origin') and request.headers.get('sec-fetch-site')!='same-origin':
+        raise HTTPException(403,'Cookie-authenticated writes require same-origin browser evidence')
     origin=request.headers.get('origin')
     if origin and origin not in [f'http://{request.headers.get("host")}',f'https://{request.headers.get("host")}']:
         raise HTTPException(403,'Cross-origin request refused')
@@ -126,7 +131,11 @@ async def headers(request,call_next):
     response=await call_next(request)
     response.headers['X-Content-Type-Options']='nosniff'
     response.headers['Cache-Control']='no-store'
-    response.headers['Content-Security-Policy']="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; frame-ancestors 'none'; base-uri 'none'"
+    response.headers['Content-Security-Policy']="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; frame-ancestors 'none'; base-uri 'none'; object-src 'none'; form-action 'self'; connect-src 'self'"
+    response.headers['Referrer-Policy']='no-referrer'
+    response.headers['Permissions-Policy']='camera=(), microphone=(), geolocation=()'
+    response.headers['X-Frame-Options']='DENY'
+    if os.getenv('RESCUE_ENV')=='production':response.headers['Strict-Transport-Security']='max-age=31536000'
     return response
 
 

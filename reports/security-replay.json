@@ -1,0 +1,30 @@
+[
+  {
+    "case_id": "get-jwks-lru",
+    "input_guard_passed": true,
+    "output_guard_passed": true,
+    "patch_policy_passed": true,
+    "original_review_unchanged": true
+  },
+  {
+    "case_id": "hexo-uglify-terser",
+    "input_guard_passed": true,
+    "output_guard_passed": true,
+    "patch_policy_passed": true,
+    "original_review_unchanged": true
+  },
+  {
+    "case_id": "hexo-yam-svgo",
+    "input_guard_passed": true,
+    "output_guard_passed": true,
+    "patch_policy_passed": true,
+    "original_review_unchanged": true
+  },
+  {
+    "case_id": "v8r-js-yaml",
+    "input_guard_passed": true,
+    "output_guard_passed": true,
+    "patch_policy_passed": true,
+    "original_review_unchanged": true
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "same_origin_CSP": true,
+  "no_referrer": true,
+  "frame_denied": true,
+  "authenticated_read": true,
+  "cross_site_write_blocked": true,
+  "oversized_write_blocked": true,
+  "cookie_write_without_origin_blocked": true,
+  "runtime_private": true,
+  "ready": true
+}

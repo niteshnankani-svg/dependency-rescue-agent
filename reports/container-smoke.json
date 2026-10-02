@@ -9,7 +9,7 @@
   "remote_baseline_execution": {
     "exit_code": 0,
     "timed_out": false,
-    "seconds": 0.93,
+    "seconds": 1.12,
     "tests": 20,
     "passes": 20,
     "failures": [],

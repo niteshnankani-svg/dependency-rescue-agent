@@ -2,6 +2,7 @@ import hashlib
 import re
 from pathlib import Path, PurePosixPath
 from pydantic import BaseModel, ConfigDict, Field
+from .security import secret_present, check_new_capabilities
 
 
 class Edit(BaseModel):
@@ -42,7 +43,6 @@ def snapshot_digest(root):
 
 
 def source_preflight(root,globs=None):
-    patterns=[r'gh[pousr]_[A-Za-z0-9]{20,}',r'hf_[A-Za-z0-9]{20,}',r'sk-[A-Za-z0-9_-]{20,}',r'-----BEGIN (?:RSA |OPENSSH |EC )?PRIVATE KEY-----']
     files=source_files(root,globs)
     if len(files)>500:
         raise ValueError('Source inventory exceeds review limit')
@@ -50,7 +50,7 @@ def source_preflight(root,globs=None):
         if p.stat().st_size>500_000:
             raise ValueError('Source file exceeds review limit: '+str(p.relative_to(root)))
         text=p.read_text()
-        if any(re.search(pattern,text) for pattern in patterns):
+        if secret_present(text):
             raise ValueError('Possible credential in source; remove it before model processing: '+str(p.relative_to(root)))
     return files
 
@@ -112,6 +112,8 @@ def apply_repair(root: Path, repair: Repair, globs=None):
         for pattern in [r'process\s*\.\s*exit',r'child_process',r'\beval\s*\(',r'new\s+Function',r'\bfetch\s*\(',r'\.\s*(?:skip|only)\s*\(',r'writeFile',r'execSync',r'spawnSync']:
             if len(re.findall(pattern,edit.new))>len(re.findall(pattern,edit.old)):
                 raise ValueError('Repair introduces forbidden execution, I/O or test-bypass behavior')
+        check_new_capabilities(edit.old,edit.new)
+        if secret_present(edit.new):raise ValueError("Repair contains a possible credential")
         updates[path]=text.replace(edit.old,edit.new,1)
     for path,text in updates.items():
         original=path.read_text()

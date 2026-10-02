@@ -14,6 +14,7 @@ from langgraph.types import interrupt
 from .guards import Repair, apply_repair, digest_files, protected_digest, source_files, source_preflight, normalize_bindings
 from .model import propose, ProposalError, ProviderError, dependency_context
 from .runner import run_tests
+from .security import SecurityViolation, screen_evidence, screen_output, check_new_capabilities
 from .config import ROOT, RUNTIME, get_case
 
 TEMPLATES=ROOT/'data/external/templates'
@@ -105,7 +106,11 @@ def reproduce(s):
 
 
 def investigate(s):
-    evidence=dependency_context(workspace(s),case(s),s['broken'])
+    try:
+        evidence=dependency_context(workspace(s),case(s),s['broken'])
+        screen_evidence(evidence,'dependency documentation')
+    except SecurityViolation as exc:
+        return {'status':'blocked','error':str(exc),**event('security','Untrusted dependency evidence blocked before checkpointing or model access')}
     return {'api_evidence':evidence,**event('investigate','Compared original and upgraded package APIs; retrieved '+str(len(evidence))+' bounded evidence sections')}
 
 
@@ -117,6 +122,8 @@ def diagnose(s):
         failure={'tests':s.get('verification',s['broken']),'previous_patch_rejection':s.get('error'),'previous_patch':s.get('repair')}
         repair,usage=propose(workspace(s),failure,s['attempts']+1,case=case(s),api_evidence=s.get('api_evidence'))
         return {'repair':repair,'model_usage':usage,'model_calls':[usage],'attempts':s['attempts']+1,'status':'running','error':'',**event('diagnose','Model proposed a structured source repair')}
+    except SecurityViolation as exc:
+        return {'status':'blocked','error':str(exc),**event('security','Model processing blocked by security policy; operator review required')}
     except ProposalError as exc:
         return {'repair':{},'model_calls':[exc.usage],'attempts':s['attempts']+1,'status':'retry','error':str(exc),**event('diagnose','Model output failed schema validation; charged against retry budget')}
     except ProviderError as exc:
@@ -200,6 +207,11 @@ def export(s):
         expected[edit['path']]=expected[edit['path']].replace(edit['old'],edit['new'],1)
     if any((root/name).read_text()!=content for name,content in expected.items()) or protected_digest(root,case(s).source_globs)!=s['protected'] or ('environment_digest' in s and environment_digest(root)!=s['environment_digest']):
         return {'status':'blocked','error':'Workspace changed since verification',**event('export','Stale evidence refused')}
+    try:
+        screen_output(json.dumps(s['repair']))
+        for edit in s['repair']['edits']:check_new_capabilities(edit['old'],edit['new'])
+    except (SecurityViolation,ValueError):
+        return {'status':'blocked','error':'Current security policy rejects the stored repair',**event('security','Export refused by current output policy')}
     out=RUNTIME/s['run_id']/'repair.patch'
     out.write_text(s['patch'])
     if out.read_text()!=s['patch']:
@@ -225,7 +237,7 @@ def build_graph(checkpointer):
     for a,b in [('intake','baseline'),('baseline','upgrade'),('reproduce','investigate')]:
         graph.add_conditional_edges(a,lambda s,n=b: END if s.get('status')=='blocked' else n,[END,b])
     graph.add_edge('upgrade','reproduce')
-    graph.add_edge('investigate','diagnose')
+    graph.add_conditional_edges('investigate',lambda s: END if s.get('status')=='blocked' else 'diagnose',[END,'diagnose'])
     graph.add_conditional_edges('diagnose',lambda s: END if s['status']=='blocked' else ('diagnose' if s['attempts']<case(s).max_attempts else 'escalate') if s['status']=='retry' else 'normalize',[END,'diagnose','escalate','normalize'])
     graph.add_edge('normalize','apply')
     graph.add_conditional_edges('apply',lambda s: ('diagnose' if s['attempts']<case(s).max_attempts else 'escalate') if s.get('status')=='blocked' else 'verify',['diagnose','escalate','verify'])
@@ -238,7 +250,8 @@ def build_graph(checkpointer):
 
 
 def open_graph():
-    RUNTIME.mkdir(exist_ok=True)
+    RUNTIME.mkdir(exist_ok=True,mode=0o700)
+    RUNTIME.chmod(0o700)
     os.environ['LANGGRAPH_STRICT_MSGPACK']='true'
     connection=sqlite3.connect(RUNTIME/'checkpoints.sqlite',check_same_thread=False)
     connection.execute('PRAGMA journal_mode=WAL')
