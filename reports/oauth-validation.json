@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-02",
+  "python_tests": 125,
+  "frontend_tests": 3,
+  "github_client_configured": false,
+  "google_client_configured": false,
+  "live_provider_login_verified": false,
+  "browser_ui_verified": true,
+  "security_checks": [
+    "browser-bound single-use state",
+    "PKCE S256",
+    "Google issuer/audience/nonce/expiry/signature/verified-email/azp",
+    "opaque hashed sessions",
+    "logout revocation",
+    "organization role allowlist",
+    "role removal",
+    "safe callback errors"
+  ],
+  "remaining": "Register provider OAuth clients, configure private credentials and approved identities; cloud use additionally requires hosted backend"
+}

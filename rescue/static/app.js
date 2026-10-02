@@ -223,3 +223,28 @@ async function pollPreparation(id){
     githubBusy=false;$('github-prepare').hidden=true;$('github-inspect-button').disabled=false;
   }catch(error){githubMessage(error.message+' Preparation may still be running. Reload workflows after reconnecting.',true);githubBusy=false;$('github-inspect-button').disabled=false;}
 }
+
+
+let oauthProviders={};
+async function loadAccount(){
+  if(document.body.dataset.hosted==='standalone'){
+    $('account-status').textContent='A hosted backend is required for sign-in.';
+    $('oauth-message').textContent='This Vercel deployment contains only the frontend. OAuth runs on the backend.';
+    document.querySelector('.oauth-help').href='https://github.com/niteshnankani-svg/dependency-rescue-agent/blob/codex/dependency-rescue/OAUTH_SETUP.md';
+    return;
+  }
+  try{
+    const response=await fetch('/auth/providers');if(!response.ok)throw Error();oauthProviders=await response.json();
+    const me=await fetch('/api/me');
+    if(me.ok){const actor=await me.json();$('account-status').textContent=actor.provider==='service'?`Local/service session · ${actor.roles.join(', ')}`:`Signed in as ${actor.name} · ${actor.provider} · ${actor.roles.join(', ')}`;$('oauth-logout').hidden=actor.provider==='service';}
+    else $('account-status').textContent='Sign in with an enabled provider or your organization access token.';
+  }catch{$('account-status').textContent='Sign-in service unavailable. Check the backend connection.';}
+}
+for(const provider of ['github','google']) $('oauth-'+provider).onclick=()=>{
+  if(oauthProviders[provider]?.enabled)window.location.assign(oauthProviders[provider].url);
+  else $('oauth-message').textContent=document.body.dataset.hosted==='standalone'?'Sign-in requires a hosted backend.':'This provider is not configured yet. Open Administrator setup to register an OAuth client and enable it.';
+};
+$('oauth-logout').onclick=async()=>{
+  try{await api('/api/logout',{method:'POST'});window.location.reload();}catch(error){$('oauth-message').textContent=error.message;}
+};
+loadAccount();

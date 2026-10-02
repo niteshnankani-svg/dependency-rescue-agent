@@ -73,3 +73,7 @@ For a constrained development Mac with a dedicated `rescue` Colima profile, set 
 ## Connect a GitHub repository
 
 The local Docker app now includes GitHub MCP inspection and bounded npm repository preparation. See [GITHUB_ONBOARDING.md](GITHUB_ONBOARDING.md) for the workflow, connection settings, supported projects, and production limits.
+
+## GitHub and Google login
+
+Browser OAuth sign-in is implemented for both providers. Register provider clients and approve workspace identities using [OAUTH_SETUP.md](OAUTH_SETUP.md). Client credentials are required before live login can be enabled.

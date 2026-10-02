@@ -17,6 +17,9 @@ def jwks_client(url):
 def verify(token,local_token):
     if not token.isascii() or len(token)>8192:
         raise HTTPException(401,'Invalid credentials')
+    if token.startswith('rs_'):
+        from .oauth import verify_session
+        return verify_session(token)
     if os.getenv('RESCUE_ENV','development')!='production' and hmac.compare_digest(token,local_token):
         return {'id':'local-user','roles':['viewer','operator','reviewer']}
     for item in json.loads(os.getenv('RESCUE_AUTH_KEYS','[]')):
@@ -51,7 +54,12 @@ def validate_production():
     if os.getenv('RESCUE_RUNNER')!='remote':
         raise RuntimeError('Production API must use a separate remote executor')
     keys=json.loads(os.getenv('RESCUE_AUTH_KEYS','[]'))
-    if not keys and not os.getenv('RESCUE_OIDC_ISSUER'):
+    from .oauth import configured,origin
+    oauth_enabled=any(configured(p) for p in ['github','google'])
+    if oauth_enabled:
+        origin()
+        if not json.loads(os.getenv('RESCUE_OAUTH_ROLES','{}')):raise RuntimeError('OAuth requires an organization role allowlist')
+    if not keys and not os.getenv('RESCUE_OIDC_ISSUER') and not oauth_enabled:
         raise RuntimeError('Production requires role-scoped keys or OIDC')
     for key in keys:
         if not isinstance(key,dict) or not key.get('id') or len(key.get('token',''))<32 or not key.get('roles') or not set(key['roles'])<=set(['viewer','operator','reviewer']):

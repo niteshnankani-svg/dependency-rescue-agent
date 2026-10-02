@@ -27,7 +27,7 @@ if not TOKEN_PATH.exists():
     with os.fdopen(fd,'w') as f:
         f.write(secrets.token_urlsafe(32))
 TOKEN=os.getenv('RESCUE_API_TOKEN') or TOKEN_PATH.read_text().strip()
-LOCAL=os.getenv('RESCUE_ENV','development')!='production' and not bool(os.getenv('RESCUE_API_TOKEN'))
+LOCAL=os.getenv('RESCUE_ENV','development')!='production' and not bool(os.getenv('RESCUE_API_TOKEN')) and not any(os.getenv('RESCUE_'+p+'_OAUTH_CLIENT_ID') for p in ['GITHUB','GOOGLE'])
 STOP=threading.Event()
 
 
@@ -123,7 +123,7 @@ def session(request:Request,actor=Depends(authorize)):
     token=request.headers.get('authorization','').removeprefix('Bearer ')
     if not token:
         raise HTTPException(400,'Bearer token required for login')
-    response.set_cookie('rescue_session',token,httponly=True,samesite='strict',secure=not LOCAL,max_age=3600)
+    response.set_cookie('rescue_session',token,httponly=True,samesite='strict',secure=os.getenv('RESCUE_ENV')=='production',max_age=3600)
     return response
 
 
@@ -143,7 +143,7 @@ async def headers(request,call_next):
 @app.get('/')
 def home(request:Request):
     response=FileResponse(ROOT/'rescue/static/index.html')
-    if LOCAL and request.client and request.client.host in ['127.0.0.1','::1','testclient']:
+    if LOCAL and not request.cookies.get('rescue_session','').startswith('rs_') and request.client and request.client.host in ['127.0.0.1','::1','testclient']:
         response.set_cookie('rescue_session',TOKEN,httponly=True,samesite='strict',max_age=3600)
         response.headers['X-Rescue-Local-Session']='renewed'
     return response
@@ -360,3 +360,34 @@ def github_inspection(inspection_id:str,actor=Depends(authorize)):
     except ValueError as error:raise HTTPException(404,str(error)) from None
     if value['actor']!=actor['id']:raise HTTPException(403,'Inspection belongs to another operator')
     return value
+
+
+from . import oauth
+
+@app.get('/auth/providers')
+def login_providers():
+    return {p:{'enabled':oauth.configured(p),'url':'/auth/'+p+'/start'} for p in ['github','google']}
+
+@app.get('/auth/{provider}/start')
+def oauth_start(provider:str,request:Request):
+    return oauth.start(provider,request)
+
+@app.get('/auth/{provider}/callback')
+def oauth_callback(provider:str,request:Request):
+    return oauth.callback(provider,request)
+
+@app.get('/api/me')
+def identity(actor=Depends(authorize)):
+    return {'id':actor['id'],'name':actor.get('name',actor['id']),'roles':actor['roles'],'provider':actor.get('provider','service')}
+
+@app.post('/api/logout')
+def logout(request:Request,actor=Depends(authorize)):
+    value=request.cookies.get('rescue_session','')
+    if value.startswith('rs_'):oauth.revoke(value)
+    response=JSONResponse({'signed_out':True});response.delete_cookie('rescue_session');return response
+
+
+@app.get('/auth/setup')
+def oauth_setup():
+    from fastapi.responses import PlainTextResponse
+    return PlainTextResponse((ROOT/'OAUTH_SETUP.md').read_text())

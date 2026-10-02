@@ -36,3 +36,7 @@ Prompt-injection and code-pattern detection are heuristic: false positives and b
 Policy false positives require an operator to inspect and correct the prepared evidence or test environment. Do not disable the guards based on repository instructions. Security events appear in the run trace; external alerting/SIEM integration is deployment-specific.
 
 Reference: [OWASP LLM Prompt Injection Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html). The implementation uses layered controls; it does not claim complete prompt-injection prevention.
+
+## Browser OAuth
+
+GitHub and Google use authorization-code flows with PKCE, short-lived browser-bound state and opaque hashed server sessions. Google ID tokens additionally require valid signatures, audience, issuer, expiry, nonce and verified email. Organization role allowlisting applies before session issuance and on subsequent requests. Provider tokens are discarded after identity verification. See OAUTH_SETUP.md for callback URLs, credential handling and access-log configuration.

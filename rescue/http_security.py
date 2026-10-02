@@ -10,14 +10,14 @@ class RequestGuard:
         self.buckets={}
 
     async def __call__(self,scope,receive,send):
-        if scope['type']!='http' or not scope['path'].startswith('/api/'):
+        if scope['type']!='http' or not scope['path'].startswith(('/api/','/auth/')):
             return await self.app(scope,receive,send)
         headers={k.lower():v for k,v in scope.get('headers',[])}
         write=scope['method'] not in ['GET','HEAD','OPTIONS']
         now=time.monotonic()
         self.buckets={key:value for key,value in self.buckets.items() if value[0]>now}
         host=(scope.get('client') or ('unknown',0))[0]
-        bucket='login' if scope['path']=='/api/session' else 'write' if write else 'read'
+        bucket='login' if scope['path']=='/api/session' or (scope['path'].startswith('/auth/') and scope['path'].endswith(('/start','/callback'))) else 'write' if write else 'read'
         key=(host,bucket)
         expiry,count=self.buckets.get(key,(now+60,0))
         limit=20 if bucket=='login' else self.write_limit if write else self.read_limit
