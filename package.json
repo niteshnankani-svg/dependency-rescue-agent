@@ -1,0 +1,12 @@
+{
+  "name": "dependency-rescue-ui",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "build": "node frontend/build.mjs"
+  },
+  "dependencies": {
+    "esbuild": "0.28.2",
+    "motion": "13.5.0"
+  }
+}

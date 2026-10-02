@@ -4,7 +4,7 @@
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#101713"><meta name="description" content="Dependency Rescue: review AI-generated dependency repairs with isolated test evidence.">
   <title>Dependency Rescue · Engineering workspace</title>
-  <link rel="stylesheet" href="/static/style.css"><script src="/static/app.js" defer></script>
+  <link rel="stylesheet" href="/static/style.css"><script src="/static/app.js" defer></script><script src="/static/motion.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#desk">Skip to workspace</a>
@@ -16,8 +16,19 @@
   <div class="sidebar-foot"><span class="avatar">W</span><div>Engineering workspace<small>Isolated execution</small></div></div>
 </aside>
 <main id="desk">
-  <header class="topbar"><div><span class="breadcrumb">Workspace</span><span class="slash">/</span><strong>Dependency repairs</strong></div><div class="connection" id="connection" role="status"><span class="dot"></span><span id="connection-text">Connecting</span></div></header>
-  <section class="heading-row"><div><p class="eyebrow">DEPENDENCY OPERATIONS</p><h1>Keep your upgrades moving<span>.</span></h1><p class="lede">From breaking change to a repair you can verify.</p></div><a class="quiet-link" href="#new-repair">New repair <span>↗</span></a></section>
+  <header class="topbar"><div><span class="breadcrumb">Workspace</span><span class="slash">/</span><strong>Dependency repairs</strong></div><button id="motion-toggle" class="secondary small" type="button" aria-pressed="true">◌ Motion on</button><div class="connection" id="connection" role="status"><span class="dot"></span><span id="connection-text">Connecting</span></div></header>
+  <section class="heading-row"><div><p class="eyebrow">DEPENDENCY OPERATIONS</p><h1>Breaking changes.<br><span>Forward momentum.</span></h1><p class="lede">Your dependency repair command center. Reproduce, repair, and review—with evidence at every step.</p></div><a class="quiet-link" href="#new-repair">New repair <span>↗</span></a></section>
+  <section class="pipeline-card" aria-labelledby="pipeline-title">
+    <div class="pipeline-copy"><p class="eyebrow">THE REPAIR ENGINE</p><h2 id="pipeline-title">One graph.<br>Every safeguard.</h2><p>A bounded LangGraph workflow, from the first failing test to your final decision.</p><span class="architecture-label">WORKFLOW ARCHITECTURE · NOT LIVE STATUS</span></div>
+    <svg class="pipeline-art" viewBox="0 0 700 260" role="img" aria-label="Reproduce flows into a repair agent, isolated verification, and human review. Failed verification returns to the agent for a bounded retry.">
+    <defs><pattern id="grid" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#35433f"/></pattern><radialGradient id="glow"><stop stop-color="#bceeab" stop-opacity=".28"/><stop offset="1" stop-color="#bceeab" stop-opacity="0"/></radialGradient></defs>
+    <rect width="700" height="260" fill="url(#grid)"/><ellipse class="core-halo" cx="315" cy="126" rx="150" ry="120" fill="url(#glow)"/>
+    <g fill="none" stroke="#455c50" stroke-width="1.5"><path d="M150 125H255M375 125H465M565 125H625"/><path d="M515 152V210H315V160"/></g>
+    <g class="signal" fill="none" stroke="#c0efa6" stroke-width="2" stroke-dasharray="5 55"><path d="M150 125H255M375 125H465M565 125H625"/></g>
+    <g fill="#16241e" stroke="#526c57"><rect x="40" y="95" width="110" height="60" rx="12"/><rect x="255" y="75" width="120" height="100" rx="22"/><rect x="465" y="95" width="100" height="60" rx="12"/><circle cx="649" cy="125" r="24"/></g>
+    <g fill="#d9e9de" text-anchor="middle" font-family="system-ui" font-size="12"><text x="95" y="120">01</text><text x="95" y="140">Reproduce</text><text x="315" y="114" font-size="26" fill="#c0efa6">✧</text><text x="315" y="143">Repair agent</text><text x="515" y="120">03</text><text x="515" y="140">Verify</text><text x="649" y="131" font-size="20">✓</text><text x="649" y="172">Review</text><text x="407" y="231" fill="#91a99b" font-size="10">BOUNDED RETRY · MAX 3 ATTEMPTS</text></g></svg>
+  </section>
+  <section id="hosting-note" class="hosting-note" hidden><strong>Frontend is live. Connect your backend to run repairs.</strong><p>This deployment contains the interface only. Your local repair history and credentials are not published. A persistent HTTPS API and Docker worker are required.</p></section>
   <section class="overview" aria-label="Workspace summary">
     <div><span class="stat-icon">⌘</span><div><small>Registered workflows</small><strong id="stat-cases">—</strong></div><span class="stat-caption">Pinned environments</span></div>
     <div><span class="stat-icon">◷</span><div><small>Awaiting review</small><strong id="stat-review">—</strong></div><span class="stat-caption">Your decision needed</span></div>
