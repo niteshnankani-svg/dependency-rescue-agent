@@ -389,5 +389,27 @@ def logout(request:Request,actor=Depends(authorize)):
 
 @app.get('/auth/setup')
 def oauth_setup():
-    from fastapi.responses import PlainTextResponse
-    return PlainTextResponse((ROOT/'OAUTH_SETUP.md').read_text())
+    return FileResponse(ROOT/'rescue/static/oauth-setup.html')
+
+
+from . import oauth_setup as local_oauth_setup
+
+@app.get('/api/oauth/setup')
+def oauth_setup_status(request:Request,actor=Depends(authorize)):
+    local_oauth_setup.guard(request,actor)
+    origin=str(request.base_url).rstrip('/')
+    return {'origin':origin,**{p:oauth.configured(p) for p in ['github','google']}}
+
+@app.post('/api/oauth/setup')
+async def oauth_setup_save(request:Request,actor=Depends(authorize)):
+    local_oauth_setup.guard(request,actor)
+    try:
+        value=local_oauth_setup.Settings.model_validate(await request.json())
+        result=local_oauth_setup.save(value,str(request.base_url).rstrip('/'))
+    except ValueError:
+        # Pydantic errors normally echo inputs, including client secrets. Suppress them.
+        raise HTTPException(422,'Check the Client ID, Client secret and account fields. No settings were saved.') from None
+    global LOCAL
+    LOCAL=False
+    audit(actor,'configure_oauth_'+value.provider,'')
+    return result

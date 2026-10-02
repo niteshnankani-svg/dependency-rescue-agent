@@ -2,6 +2,10 @@
 
 The backend implements both providers. Real sign-in requires OAuth clients registered with the providers. No client ID or secret was configured when this feature was built. Google login authenticates identity; it does not authorize GitHub repositories. GitHub login currently requests read:user only. Repository onboarding retains its separate server-side GitHub App/local CLI connection.
 
+## Simple local setup form
+
+Open the local workspace first, then visit http://127.0.0.1:8093/auth/setup . Paste each provider’s Client ID and Client secret, enter your own GitHub username or Google email, and click Save. The form writes the ignored .env atomically with owner-only permissions and activates settings immediately. Secrets are never returned to the browser. This configuration route requires an authenticated reviewer and a loopback connection, and is disabled in production. Configure each provider with the exact callback URL shown in the form.
+
 ## 1. Set the application origin
 
 For this Mac:
