@@ -44,7 +44,11 @@ class GitHub:
         allowed=set(filter(None,os.getenv('RESCUE_GITHUB_ALLOWED_REPOS','').split(',')))
         return [{'repository':r['full_name'],'private':r['private']} for r in data if os.getenv('RESCUE_ENV')!='production' or r['full_name'] in allowed]
     def file(self,repo,sha,path):
-        data=self.get('/repos/'+repo+'/contents/'+quote(path,safe='/'),params={'ref':sha})
+        response=self.client.get('/repos/'+repo+'/contents/'+quote(path,safe='/'),params={'ref':sha})
+        if response.status_code==404:
+            raise ValueError(f'Required root file {path} is unavailable at this commit. This importer supports npm projects with root package.json and package-lock.json; Python projects and nested frontend projects need a separate execution profile.')
+        if response.status_code in (401,403):raise ValueError('GitHub access denied or rate limited. Check the server connection and repository permissions.')
+        response.raise_for_status();data=response.json()
         if not isinstance(data,dict) or data.get('encoding')!='base64' or data.get('size',0)>2_000_000:raise ValueError('Unsupported or oversized repository file')
         return base64.b64decode(data['content'])
     def mcp_manifest(self,repo,sha):
