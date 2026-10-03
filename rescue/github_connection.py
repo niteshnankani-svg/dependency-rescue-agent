@@ -25,8 +25,10 @@ def token():
 
 
 class GitHub:
-    def __init__(self):
-        self.token=token()
+    def __init__(self,public_owner=None):
+        if public_owner is not None and not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9-]{0,38}',public_owner):raise ValueError('Invalid GitHub account')
+        self.public_owner=public_owner
+        self.token=None if public_owner else token()
         self.client=httpx.Client(base_url='https://api.github.com',timeout=30,trust_env=False,headers={'Accept':'application/vnd.github+json',**({'Authorization':'Bearer '+self.token} if self.token else {})})
     def close(self):self.client.close()
     def get(self,path,**kwargs):
@@ -36,9 +38,17 @@ class GitHub:
     def check_repository(self,repo):
         if not REPOSITORY.fullmatch(repo) or any(x in ['.','..'] for x in repo.split('/')):raise ValueError('Use owner/repository, not a URL')
         allowed=set(filter(None,os.getenv('RESCUE_GITHUB_ALLOWED_REPOS','').split(',')))
+        if getattr(self,'public_owner',None):
+            if repo.split('/')[0].lower()!=self.public_owner.lower():raise ValueError('Select a public repository owned by your signed-in account')
+            result=self.get('/repos/'+repo)
+            if result.get('private') or result.get('owner',{}).get('login','').lower()!=self.public_owner.lower():raise ValueError('Only public repositories owned by your account are supported')
+            return result
         if os.getenv('RESCUE_ENV')=='production' and repo not in allowed:raise ValueError('Repository is not enabled by the organization administrator')
         return self.get('/repos/'+repo)
     def repositories(self):
+        if getattr(self,'public_owner',None):
+            data=self.get('/users/'+self.public_owner+'/repos',params={'per_page':100,'sort':'updated','type':'owner'})
+            return [{'repository':r['full_name'],'private':False} for r in data if not r['private'] and r['owner']['login'].lower()==self.public_owner.lower()]
         if not self.token:return []
         if os.getenv('RESCUE_GITHUB_APP_ID'):
             data=self.get('/installation/repositories',params={'per_page':100})['repositories']

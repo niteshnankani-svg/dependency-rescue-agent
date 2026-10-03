@@ -4,6 +4,7 @@ services:
   api:
     environment:
       RESCUE_VERCEL_WORKSPACE: "1"
+      RESCUE_CLOUD_IMPORTS: ${RESCUE_CLOUD_IMPORTS:-0}
       RESCUE_PUBLIC_URL: https://${RESCUE_DOMAIN:?Set Azure frontend hostname}
   gateway:
     image: caddy:2

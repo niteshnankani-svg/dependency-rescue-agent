@@ -60,6 +60,10 @@ class Case(BaseModel):
 
     @property
     def templates(self):
+        if self.template_dir.startswith('remote-imports/'):
+            path=(RUNTIME/self.template_dir).resolve()
+            if not path.is_relative_to((RUNTIME/'remote-imports').resolve()):raise ValueError('Template escapes import root')
+            return path
         path=(DATA/self.template_dir).resolve()
         if not path.is_relative_to(DATA):
             raise ValueError('Template escapes data root')
@@ -85,6 +89,8 @@ def cases():
     values=[Case.model_validate(c) for c in json.loads(path.read_text())]
     imported=DATA/'imports/registry.json'
     if imported.exists():values += [Case.model_validate(c) for c in json.loads(imported.read_text())]
+    remote=RUNTIME/'remote-imports/registry.json'
+    if remote.exists():values += [Case.model_validate(c) for c in json.loads(remote.read_text())]
     if len({c.id for c in values})!=len(values):
         raise ValueError('Duplicate case identifiers')
     return {c.id:c for c in values}

@@ -12,14 +12,19 @@ services:
     tmpfs: ["/tmp:size=64m"]
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - import-runtime:/runtime
       - ${RESCUE_DATA_ROOT:?Set prepared data directory}:/data:ro
       - ${RESCUE_WORKSPACE_ROOT:?Set absolute disposable workspace directory}:${RESCUE_WORKSPACE_ROOT}
     environment:
       RESCUE_DATA_ROOT: /data
       RESCUE_WORKSPACE_ROOT: ${RESCUE_WORKSPACE_ROOT}
       RESCUE_EXECUTOR_TOKEN: ${RESCUE_EXECUTOR_TOKEN:?Set executor token}
+      RESCUE_RUNTIME: /runtime
+      RESCUE_CLOUD_IMPORTS: ${RESCUE_CLOUD_IMPORTS:-0}
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8094/healthz',timeout=2)"]
       interval: 30s
       timeout: 3s
       retries: 3
+volumes:
+  import-runtime:

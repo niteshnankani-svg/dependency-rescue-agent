@@ -173,7 +173,20 @@ def ready():
 
 @app.get('/api/cases',dependencies=[Depends(authorize)])
 def cases(actor=Depends(authorize)):
-    return [c.public() for c in registry().values() if 'demo' not in actor['roles'] or c.id=='hexo-uglify-terser']
+    owned=demo_case_ids(actor) if 'demo' in actor['roles'] else set()
+    return [c.public() for c in registry().values() if 'demo' not in actor['roles'] or c.id=='hexo-uglify-terser' or c.id in owned]
+
+
+def demo_case_ids(actor):
+    if 'demo' not in actor.get('roles',[]):return set()
+    from . import onboarding
+    result=set()
+    for path in onboarding.folder().glob('*.json'):
+        try:value=json.loads(path.read_text())
+        except (OSError,ValueError):continue
+        if value.get('actor')==actor['id'] and value.get('status')=='ready' and value.get('case_id','').startswith('github-'):
+            result.add(value['case_id'])
+    return result
 
 
 class Start(BaseModel):
@@ -193,7 +206,7 @@ def ensure_execution_ready(selected):
 def start(body:Start,actor=Depends(authorize)):
     demo='demo' in actor['roles']
     if not demo:require(actor,'operator')
-    if demo and body.case_id!='hexo-uglify-terser':raise HTTPException(403,'Public demo supports the prepared Terser example only')
+    if demo and body.case_id not in ({'hexo-uglify-terser'}|demo_case_ids(actor)):raise HTTPException(403,'This workflow is not available in your demo workspace')
     key=hashlib.sha256((actor['id']+'\0'+body.idempotency_key).encode()).hexdigest() if demo else body.idempotency_key
     if body.case_id not in registry():
         raise HTTPException(422,'Case not qualified')
@@ -276,6 +289,7 @@ DECISION_LOCK=threading.Lock()
 
 @app.post('/api/runs/{run_id}/decision',dependencies=[Depends(authorize)])
 def decision(run_id:str,body:Decision,actor=Depends(authorize)):
+    if 'demo' in actor['roles']:raise HTTPException(403,'Demo accounts cannot approve or reject patches')
     require(actor,'reviewer')
     with DECISION_LOCK:
         current=state(run_id)
@@ -319,6 +333,7 @@ def audit_history(run_id:str,actor=Depends(authorize)):
 
 @app.post('/api/runs/{run_id}/publish')
 def publish(run_id:str,actor=Depends(authorize)):
+    if 'demo' in actor['roles']:raise HTTPException(403,'Demo accounts cannot publish patches')
     require(actor,'reviewer')
     with DECISION_LOCK:
         current=state(run_id)
@@ -364,33 +379,38 @@ from .github_connection import GitHub
 
 @app.get('/api/github/repositories')
 def github_repositories(actor=Depends(authorize)):
-    require(actor,'operator')
-    github=GitHub()
-    try:return {'connected':bool(github.token),'repositories':github.repositories(),'limit':100}
+    demo='demo' in actor['roles']
+    if not demo:require(actor,'operator')
+    github=GitHub(public_owner=actor.get('name') if demo else None)
+    try:return {'connected':bool(github.token) or bool(github.public_owner),'public_owner':github.public_owner,'repositories':github.repositories(),'limit':100}
     except Exception:raise HTTPException(502,'GitHub connection unavailable. Check server authentication and repository permissions.') from None
     finally:github.close()
 
 @app.post('/api/github/inspect')
 def github_inspect(body:onboarding.Inspect,actor=Depends(authorize)):
-    require(actor,'operator')
+    demo='demo' in actor['roles']
+    if not demo:require(actor,'operator')
     try:
-        value=onboarding.inspect(body,actor['id']);audit(actor,'inspect_repository',value['id']);return value
+        if demo and not os.getenv('RESCUE_CLOUD_IMPORTS')=='1':raise ValueError('Cloud repository preparation is not enabled')
+        owner=actor.get('name') if demo else None
+        request=body.model_copy(update={'use_mcp':False}) if demo else body
+        value=onboarding.inspect(request,actor['id'],public_owner=owner);audit(actor,'inspect_repository',value['id']);return value
     except ValueError as error:raise HTTPException(422,str(error)) from None
     except Exception:raise HTTPException(502,'GitHub inspection failed. Check server authentication and connectivity.') from None
 
 @app.post('/api/github/prepare',status_code=202)
 def github_prepare(body:onboarding.Prepare,actor=Depends(authorize)):
-    require(actor,'operator')
+    if 'demo' not in actor['roles']:require(actor,'operator')
     try:
         value=onboarding.prepare(body,actor['id']);audit(actor,'prepare_repository',value['id']);return value
     except ValueError as error:raise HTTPException(422,str(error)) from None
 
 @app.get('/api/github/inspections/{inspection_id}')
 def github_inspection(inspection_id:str,actor=Depends(authorize)):
-    require(actor,'operator')
+    if 'demo' not in actor['roles']:require(actor,'operator')
     try:value=onboarding.read(inspection_id)
     except ValueError as error:raise HTTPException(404,str(error)) from None
-    if value['actor']!=actor['id']:raise HTTPException(403,'Inspection belongs to another operator')
+    if value['actor']!=actor['id']:raise HTTPException(404,'Inspection not found')
     return value
 
 

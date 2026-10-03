@@ -23,7 +23,7 @@ from .security import secret_present
 LOCK=threading.Lock()
 MAX_ARCHIVE=30_000_000
 MAX_SOURCE=100_000_000
-IMPORTS=DATA/'imports'
+IMPORTS=RUNTIME/'remote-imports' if os.getenv('RESCUE_CLOUD_IMPORTS')=='1' else DATA/'imports'
 
 
 class Inspect(BaseModel):
@@ -92,8 +92,8 @@ def test_profile(package):
     return 'jest',['node_modules/jest/bin/jest.js',*args[1:],'--json','--runInBand','--no-cache']
 
 
-def inspect(body,actor):
-    github=GitHub()
+def inspect(body,actor,public_owner=None):
+    github=GitHub(public_owner=public_owner) if public_owner else GitHub()
     try:
         meta=github.check_repository(body.repository)
         from urllib.parse import quote
@@ -119,6 +119,7 @@ def inspect(body,actor):
             dependencies={**package.get('devDependencies',{}),**package.get('dependencies',{})}
         mcp=(github.mcp_manifest(body.repository,commit) if manifest_path=='package.json' else github.mcp_manifest(body.repository,commit,manifest_path)) if body.use_mcp else None
         value={'id':uuid.uuid4().hex,'actor':actor,'status':'inspected','repository':body.repository,'commit':commit,'dependencies':dependencies,'language':language,'project_dir':project,'manifest_path':manifest_path,'requirements':lines,'reporter':reporter,'test_args':args,'license':str(package.get('license') or 'Unspecified')[:100],'mcp':mcp,'message':('Python 3.11 / pytest inspection passed. Published wheels only; tests run offline without API keys. Missing models, fixtures or integration services will block baseline verification.' if language=='python' else 'Inspection passed.')+' Choose a dependency and exact target version to prepare isolated environments.'}
+        if public_owner:value['public_owner']=public_owner;value['actor_name']=public_owner
         save(value);return value
     finally:github.close()
 
@@ -172,6 +173,9 @@ def setup(root,case,command):
 
 
 def prepare(body,actor):
+    if os.getenv('RESCUE_RUNNER')=='remote' and os.getenv('RESCUE_CLOUD_IMPORTS')=='1':
+        from .cloud_imports import prepare_remote
+        return prepare_remote(body,actor)
     if os.getenv('RESCUE_RUNNER')!='docker' or os.getenv('RESCUE_ENV')=='production':raise ValueError('Automatic onboarding currently requires the local Docker runner; remote production workers need synchronized immutable snapshots')
     if not LOCK.acquire(blocking=False):raise ValueError('Another repository is being prepared; wait for it to finish')
     try:
@@ -190,7 +194,8 @@ def prepare_worker(body,value):
     case_id='github-'+value['id'];root=IMPORTS/case_id
     github=None;registered=False
     try:
-        github=GitHub();github.check_repository(value['repository'])
+        github=GitHub(public_owner=value['public_owner']) if value.get('public_owner') else GitHub()
+        github.check_repository(value['repository'])
         IMPORTS.mkdir(parents=True,exist_ok=True,mode=0o700);IMPORTS.chmod(0o700)
         root.mkdir(mode=0o700,exist_ok=False)
         baseline=root/'baseline';baseline.mkdir()
@@ -210,6 +215,7 @@ def prepare_worker(body,value):
             globs=['src/**/*.js','src/**/*.ts','lib/**/*.js','lib/**/*.ts','index.js','index.ts']
         if not source_preflight(baseline,globs):raise ValueError('No supported editable source files found')
         case=Case(id=case_id,repository=value['repository'],base_commit=value['commit'],dependency=body.dependency,old_version=value['dependencies'][body.dependency],target_version=body.target_version,template_dir='imports/'+case_id,source_globs=globs,test_args=args,reporter=reporter,language=language,project_dir=value.get('project_dir',''),python_manifest=PurePosixPath(value.get('manifest_path','requirements.txt')).name if language=='python' else 'requirements.txt',license=value['license'],evaluation_role='customer repository — baseline not yet verified',**({'image':python_profile.IMAGE} if language=='python' else {}))
+        if os.getenv('RESCUE_CLOUD_IMPORTS')=='1':case=case.model_copy(update={'template_dir':'remote-imports/'+case_id})
         upgraded=root/'upgraded';shutil.copytree(baseline,upgraded)
         if language=='python':
             versions=python_profile.setup(baseline,case,lines)
