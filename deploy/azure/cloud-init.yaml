@@ -1,0 +1,31 @@
+#cloud-config
+package_update: true
+packages:
+  - docker.io
+  - docker-compose-v2
+  - python3-venv
+  - nodejs
+  - npm
+  - rsync
+write_files:
+  - path: /etc/systemd/system/rescue-metadata-block.service
+    permissions: '0644'
+    content: |
+      [Unit]
+      Description=Block cloud metadata from Docker workloads
+      After=docker.service
+      Requires=docker.service
+      PartOf=docker.service
+      [Service]
+      Type=oneshot
+      ExecStart=/bin/sh -c 'iptables -C DOCKER-USER -d 169.254.169.254/32 -j DROP || iptables -I DOCKER-USER -d 169.254.169.254/32 -j DROP'
+      RemainAfterExit=yes
+      [Install]
+      WantedBy=docker.service
+runcmd:
+  - [systemctl, enable, --now, docker]
+  - [usermod, -aG, docker, rescueadmin]
+  - [mkdir, -p, /srv/rescue/data, /srv/rescue/executions]
+  - [chown, -R, 'rescueadmin:rescueadmin', /srv/rescue]
+  - [systemctl, daemon-reload]
+  - [systemctl, enable, --now, rescue-metadata-block.service]

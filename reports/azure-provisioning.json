@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-03",
+  "resource_group": "dependency-rescue",
+  "region": "centralindia",
+  "vm_size": "Standard_B2ls_v2",
+  "servers": 2,
+  "retail_price_per_vm_hour_usd": 0.0448,
+  "trial_spending_limit": "On",
+  "images_built": true,
+  "isolated_fixture": {
+    "case": "hexo-uglify-terser",
+    "baseline": {
+      "passes": 6,
+      "tests": 6
+    },
+    "upgraded": {
+      "passes": 3,
+      "tests": 6
+    }
+  },
+  "credentials_uploaded": false,
+  "public_app_verified": false,
+  "cloud_agent_repair_verified": false
+}

@@ -124,7 +124,8 @@ def callback(provider,request):
         session=issue(actor)
     except HTTPException:raise
     except Exception:raise HTTPException(502,'Sign-in could not be completed. Check provider configuration and try again.') from None
-    response=RedirectResponse('/',status_code=303);response.set_cookie('rescue_session',session,httponly=True,secure=secure(),samesite='strict',max_age=3600)
+    destination='/workspace' if os.getenv('RESCUE_VERCEL_WORKSPACE')=='1' else '/'
+    response=RedirectResponse(destination,status_code=303);response.set_cookie('rescue_session',session,httponly=True,secure=secure(),samesite='strict',max_age=3600)
     response.delete_cookie('rescue_oauth_'+provider,path='/auth/'+provider,secure=secure(),httponly=True,samesite='lax')
     return response
 

@@ -5,7 +5,7 @@ services:
       context: .
       target: executor
     restart: unless-stopped
-    ports: ["127.0.0.1:8094:8094"]
+    ports: ["${RESCUE_EXECUTOR_BIND:-127.0.0.1}:8094:8094"]
     read_only: true
     cap_drop: [ALL]
     security_opt: ["no-new-privileges:true"]

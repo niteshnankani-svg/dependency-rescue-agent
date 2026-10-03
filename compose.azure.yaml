@@ -1,0 +1,21 @@
+# API + static frontend host. The executor remains on a separate VM.
+# Build the static frontend with RESCUE_FRONTEND_MODE=azure npm run build first.
+services:
+  api:
+    environment:
+      RESCUE_VERCEL_WORKSPACE: "1"
+      RESCUE_PUBLIC_URL: https://${RESCUE_DOMAIN:?Set Azure frontend hostname}
+  gateway:
+    image: caddy:2
+    restart: unless-stopped
+    ports: ["80:80", "443:443", "443:443/udp"]
+    volumes:
+      - ./deploy/azure/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./dist:/srv/frontend:ro
+      - tls-data:/data
+      - tls-config:/config
+    environment:
+      RESCUE_DOMAIN: ${RESCUE_DOMAIN:?Set Azure frontend hostname}
+volumes:
+  tls-data:
+  tls-config:

@@ -1,0 +1,11 @@
+[Unit]
+Description=Block cloud metadata from Docker workloads
+After=docker.service
+Requires=docker.service
+PartOf=docker.service
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'iptables -C DOCKER-USER -d 169.254.169.254/32 -j DROP || iptables -I DOCKER-USER -d 169.254.169.254/32 -j DROP'
+RemainAfterExit=yes
+[Install]
+WantedBy=docker.service

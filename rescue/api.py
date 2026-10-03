@@ -107,7 +107,13 @@ def authorize(request: Request):
     if not bearer and request.method not in ['GET','HEAD','OPTIONS'] and not request.headers.get('origin') and request.headers.get('sec-fetch-site')!='same-origin':
         raise HTTPException(403,'Cookie-authenticated writes require same-origin browser evidence')
     origin=request.headers.get('origin')
-    if origin and origin not in [f'http://{request.headers.get("host")}',f'https://{request.headers.get("host")}']:
+    allowed_origins={f'http://{request.headers.get("host")}',f'https://{request.headers.get("host")}'}
+    # Vercel forwards same-origin browser requests to a different backend Host.
+    # Trust only the configured public origin, never forwarded request headers.
+    if os.getenv('RESCUE_PUBLIC_URL'):
+        from .oauth import origin as public_origin
+        allowed_origins.add(public_origin())
+    if origin and origin not in allowed_origins:
         raise HTTPException(403,'Cross-origin request refused')
     return actor
 
