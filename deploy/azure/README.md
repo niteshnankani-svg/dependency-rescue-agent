@@ -34,6 +34,14 @@ Follow DEPLOYMENT.md for the separate executor. Prepare immutable snapshots and 
 
 Automatic preparation of new GitHub repositories currently supports only the local Docker workflow. Cloud deployment does not remove this restriction. Initially only explicitly prepared and synchronized cases can run; remote preparation needs additional implementation and validation.
 
+## Public GitHub demo accounts
+
+After registering the hosted `/auth/github/callback` URI, configure the GitHub OAuth client credentials privately on the API host and set `RESCUE_PUBLIC_GITHUB_DEMO=1`. Credential upload requires the owner's explicit authorization. Google signup remains allowlisted. GitHub identities absent from the organization allowlist receive only `viewer` and `demo` roles. An explicit empty allowlist entry revokes access, including existing sessions.
+
+Demo users can run only `hexo-uglify-terser` and access only their own run details, history and audit evidence. They cannot use server repository credentials, approve/export a patch, or publish a pull request. The quota is one submitted run per account per rolling 24 hours, with a shared maximum of eight demo submissions per rolling 24 hours; failed or cancelled runs consume the allowance. Quotas are recorded atomically in persistent SQLite storage before model access. The existing global queue cap and bounded graph retries still apply. This limits demo usage but is not a monetary spending cap or protection against people creating multiple GitHub accounts.
+
+The public workspace hides local administrator setup, private-token login, unavailable login providers and cloud repository onboarding. The existing organization allowlist and service tokens retain their assigned permissions. Do not claim arbitrary repository repair support from this prepared-example demo.
+
 Create the disposable worker directory with ownership matching the executor controller. The current executor image runs as root with all capabilities dropped, so a directory owned by the deployment user is not writable even when mode is 755. On the dedicated worker use `sudo install -d -o root -g root -m 750 /srv/rescue/executions`. Repository tests still execute separately as UID 1000 without network or capabilities.
 
 ## Acceptance checks
@@ -53,4 +61,4 @@ Azure reported the subscription's free-trial spending limit as enabled. Retail c
 
 Only the public, pinned `hexo-uglify-terser` development fixture is prepared on the worker: baseline 6/6; upgraded 3/6; Gemini repair 6/6 with integrity checks passing. The review is deliberately pending; no patch has been approved or merged automatically.
 
-Deployment SSH keys and private environment files are in ignored `runtime/azure/` with restrictive permissions. They are excluded from application archives and Git. The API host has the existing Gemini key; the worker has only its executor token. OAuth remains disabled until hosted callback URLs are registered. Use the private organization operator token to sign in at `https://dependency-rescue-7943-web.centralindia.cloudapp.azure.com/workspace`; use the separate reviewer token to review the verified patch. Do not share either token in a public demo.
+Deployment SSH keys and private environment files are in ignored `runtime/azure/` with restrictive permissions. They are excluded from application archives and Git. The API host has the existing Gemini key; the worker has only its executor token. GitHub OAuth and public demo signup are enabled; Google remains disabled until its hosted callback is registered and configured. Use the private organization operator token to sign in at `https://dependency-rescue-7943-web.centralindia.cloudapp.azure.com/workspace`; use the separate reviewer token to review the verified patch. Do not share either token in a public demo.

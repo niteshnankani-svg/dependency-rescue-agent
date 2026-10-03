@@ -2,7 +2,7 @@
 const $ = id => document.getElementById(id);
 let available = [], runs = [], selected = null, current = null, refreshing = false;
 let submitting = false, deciding = false, activeTab = 'overview', historySignature = '', detailSignature = '';
-let lastHealth = 0, pendingDecision = null, auditVersion = 0;
+let lastHealth = 0, pendingDecision = null, auditVersion = 0, publicDemo = false, demoAccount = false;
 const labels = {awaiting_approval:'Awaiting review',completed:'Exported',needs_engineer:'Needs engineer',blocked:'Blocked',queued:'Queued',running:'Running',cancelled:'Cancelled',rejected:'Rejected',retry:'Retrying',approved:'Exporting'};
 function notice(message, error = false) { $('notice').textContent = message; $('notice').dataset.error = String(error); }
 async function api(path, options = {}) {
@@ -21,7 +21,8 @@ async function api(path, options = {}) {
     }
     const body = await response.json().catch(() => ({}));
     if (!response.ok) {
-      if (response.status === 401) $('login').hidden = false;
+      if (response.status === 401) $('login').hidden = publicDemo;
+      if (response.status === 401) throw new Error('Sign in to access your workspace.');
       throw new Error(typeof body.detail === 'string' ? body.detail : `Request failed (${response.status}). Please try again.`);
     }
     return body;
@@ -97,7 +98,8 @@ function render(state) {
   $('diagnosis').textContent = state.repair?.diagnosis || 'The agent will explain its diagnosis after reproducing the regression.';
   renderPatch(state.patch); $('copy-patch').disabled = !state.patch;
   $('review').hidden = state.status !== 'awaiting_approval';
-  $('approve').disabled = deciding || !state.case_digest; $('reject').disabled = deciding;
+  $('approve').disabled = deciding || !state.case_digest || demoAccount; $('reject').disabled = deciding || demoAccount;
+  $('approve').hidden = $('reject').hidden = demoAccount;
   $('download').hidden = state.status !== 'completed'; $('download').href = `/api/runs/${state.run_id}/patch`;
   $('cancel').hidden = !['queued','running','awaiting_approval'].includes(state.status);
   const baselineFailure = state.baseline && !state.baseline.ok ? 'Baseline failed before any upgrade. ' + (state.baseline.failures || []).slice(0,3).map(f => f.message || f.title).join(' · ') : '';
@@ -130,8 +132,10 @@ function showCase() {
   $('start').disabled = submitting || !c.ready;
 }
 async function loadCases() {
+  const previous=$('case').value;
   available = await api('/api/cases'); $('case').replaceChildren();
   for (const c of available) { const option = node('option',`${c.repository} / ${c.dependency}`); option.value = c.id; $('case').append(option); }
+  $('case').value=(available.find(c=>c.id===previous&&c.ready)||available.find(c=>c.ready)||available[0])?.id||'';
   $('case').disabled = !available.length; $('stat-cases').textContent = available.length; showCase();
 }
 async function loadAudit() {
@@ -235,14 +239,18 @@ async function loadAccount(){
   }
   try{
     const response=await fetch('/auth/providers');if(!response.ok)throw Error();oauthProviders=await response.json();
+    publicDemo=oauthProviders.github?.public_demo===true;
+    for(const p of ['github','google']) $('oauth-'+p).hidden=!oauthProviders[p]?.enabled;
+    document.querySelector('.oauth-help').hidden=publicDemo;
+    if(publicDemo){$('login').hidden=true;document.querySelector('.github-card').hidden=true;$('oauth-message').textContent='Sign in with GitHub to run the prepared Terser repair example. One repair per account every 24 hours, subject to a shared daily allowance. Your runs are private. Connecting your own repository is not available in this cloud demo.';}
     const me=await fetch('/api/me');
-    if(me.ok){const actor=await me.json();$('account-status').textContent=actor.provider==='service'?`Local/service session · ${actor.roles.join(', ')}`:`Signed in as ${actor.name} · ${actor.provider} · ${actor.roles.join(', ')}`;$('oauth-logout').hidden=actor.provider==='service';}
-    else $('account-status').textContent='Sign in with an enabled provider or your organization access token.';
+    if(me.ok){const actor=await me.json();demoAccount=actor.roles.includes('demo');$('account-status').textContent=actor.provider==='service'?`Local/service session · ${actor.roles.join(', ')}`:`Signed in as ${actor.name} · ${demoAccount?'Demo workspace':actor.provider}`;$('oauth-logout').hidden=actor.provider==='service';if(demoAccount)$('approve').hidden=$('reject').hidden=true;}
+    else {$('account-status').textContent=publicDemo?'Continue with GitHub to try a real repair. No access token or administrator setup required.':'Sign in with an enabled provider or your organization access token.';if(publicDemo)notice('Sign in with GitHub to load your demo workspace.');}
   }catch{$('account-status').textContent='Sign-in service unavailable. Check the backend connection.';}
 }
 for(const provider of ['github','google']) $('oauth-'+provider).onclick=()=>{
   if(oauthProviders[provider]?.enabled)window.location.assign(oauthProviders[provider].url);
-  else $('oauth-message').textContent=document.body.dataset.hosted==='standalone'?'Sign-in requires a hosted backend.':'This provider is not configured yet. Open Administrator setup to register an OAuth client and enable it.';
+  else $('oauth-message').textContent=document.body.dataset.hosted==='standalone'?'Sign-in requires a hosted backend.':'This sign-in provider is unavailable. Please use another enabled provider.';
 };
 $('oauth-logout').onclick=async()=>{
   try{await api('/api/logout',{method:'POST'});window.location.reload();}catch(error){$('oauth-message').textContent=error.message;}

@@ -77,7 +77,7 @@ def validate_production():
     oauth_enabled=any(configured(p) for p in ['github','google'])
     if oauth_enabled:
         origin()
-        if not json.loads(os.getenv('RESCUE_OAUTH_ROLES','{}')):raise RuntimeError('OAuth requires an organization role allowlist')
+        if not json.loads(os.getenv('RESCUE_OAUTH_ROLES','{}')) and os.getenv('RESCUE_PUBLIC_GITHUB_DEMO')!='1':raise RuntimeError('OAuth requires an organization role allowlist')
     if not keys and not os.getenv('RESCUE_OIDC_ISSUER') and not oauth_enabled:
         raise RuntimeError('Production requires role-scoped keys or OIDC')
     for key in keys:

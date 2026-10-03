@@ -32,5 +32,13 @@
   "restart_persistence_verified": true,
   "unauthenticated_api_status": 401,
   "reviewer_submit_status": 403,
-  "workspace_assets_verified": true
+  "workspace_assets_verified": true,
+  "github_oauth_enabled": true,
+  "github_oauth_redirect_verified": true,
+  "public_github_demo_enabled": true,
+  "public_demo_limits": {
+    "runs_per_account_per_24h": 1,
+    "total_runs_per_24h": 8
+  },
+  "github_oauth_real_callback_verified": true
 }

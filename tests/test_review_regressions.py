@@ -162,7 +162,7 @@ def test_worker_persists_safe_blocked_error_for_list_and_detail(tmp_path,monkeyp
     with api.db() as c:
         c.execute('INSERT INTO jobs(id,key,status,created) VALUES (?,?,?,?)',(run_id,'review','queued',0))
     api.worker()
-    listed=api.listing()[0]
+    listed=api.listing({'id':'operator','roles':['operator']})[0]
     detailed=api.state(run_id)
     assert listed['status']==detailed['status']=='blocked'
     assert listed['error']==detailed['error']

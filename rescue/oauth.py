@@ -47,6 +47,8 @@ def secure():return origin().startswith('https://')
 
 def roles(identity,alias=''):
     mapping=json.loads(os.getenv('RESCUE_OAUTH_ROLES','{}'))
+    if identity not in mapping and alias not in mapping and identity.startswith('github:') and os.getenv('RESCUE_PUBLIC_GITHUB_DEMO')=='1':
+        return ['viewer','demo']
     values=mapping.get(identity,mapping.get(alias,[]))
     if not isinstance(values,list) or not values or not set(values)<=set(['viewer','operator','reviewer']):raise HTTPException(403,'Your account is not enabled for this organization. Ask its administrator for access.')
     return values

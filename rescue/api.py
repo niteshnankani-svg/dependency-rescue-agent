@@ -1,4 +1,5 @@
 import contextlib
+import hashlib
 import hmac
 import json
 import os
@@ -171,8 +172,8 @@ def ready():
 
 
 @app.get('/api/cases',dependencies=[Depends(authorize)])
-def cases():
-    return [c.public() for c in registry().values()]
+def cases(actor=Depends(authorize)):
+    return [c.public() for c in registry().values() if 'demo' not in actor['roles'] or c.id=='hexo-uglify-terser']
 
 
 class Start(BaseModel):
@@ -190,32 +191,50 @@ def ensure_execution_ready(selected):
 
 @app.post('/api/runs',status_code=202,dependencies=[Depends(authorize)])
 def start(body:Start,actor=Depends(authorize)):
-    require(actor,'operator')
+    demo='demo' in actor['roles']
+    if not demo:require(actor,'operator')
+    if demo and body.case_id!='hexo-uglify-terser':raise HTTPException(403,'Public demo supports the prepared Terser example only')
+    key=hashlib.sha256((actor['id']+'\0'+body.idempotency_key).encode()).hexdigest() if demo else body.idempotency_key
     if body.case_id not in registry():
         raise HTTPException(422,'Case not qualified')
     with db() as c:
         c.execute('BEGIN IMMEDIATE')
-        existing=c.execute('SELECT id,case_id FROM jobs WHERE key=?',(body.idempotency_key,)).fetchone()
+        existing=c.execute('SELECT id,case_id FROM jobs WHERE key=?',(key,)).fetchone()
         if existing:
             if existing['case_id']!=body.case_id:
                 raise HTTPException(409,'Idempotency key already belongs to another case')
             return {'run_id':existing['id']}
+        if demo:
+            since=time.time()-86400
+            if c.execute('SELECT count(*) FROM jobs WHERE actor=? AND created>?',(actor['id'],since)).fetchone()[0]>=1:
+                raise HTTPException(429,'Demo allowance used: one repair per account every 24 hours. You can still inspect your results.')
+            if c.execute("SELECT count(*) FROM audit WHERE action='demo-submit' AND time>?",(since,)).fetchone()[0]>=8:
+                raise HTTPException(429,'The shared daily demo allowance is used. Try again later.')
         ensure_execution_ready(registry()[body.case_id])
         if c.execute("SELECT count(*) FROM jobs WHERE status IN ('queued','running')").fetchone()[0]>=3:
             raise HTTPException(429,'Queue full')
         run_id=uuid.uuid4().hex
         try:
-            c.execute('INSERT INTO jobs(id,key,status,created,error,case_id,actor) VALUES (?,?,?,?,?,?,?)',(run_id,body.idempotency_key,'queued',time.time(),None,body.case_id,actor['id']))
+            c.execute('INSERT INTO jobs(id,key,status,created,error,case_id,actor) VALUES (?,?,?,?,?,?,?)',(run_id,key,'queued',time.time(),None,body.case_id,actor['id']))
+            if demo:c.execute('INSERT INTO audit(time,actor,action,run_id,evidence_digest) VALUES (?,?,?,?,?)',(time.time(),actor['id'],'demo-submit',run_id,''))
         except sqlite3.IntegrityError:
-            return {'run_id':c.execute('SELECT id FROM jobs WHERE key=?',(body.idempotency_key,)).fetchone()[0]}
+            return {'run_id':c.execute('SELECT id FROM jobs WHERE key=?',(key,)).fetchone()[0]}
     audit(actor,'submit',run_id)
     return {'run_id':run_id}
 
 
 @app.get('/api/runs',dependencies=[Depends(authorize)])
-def listing():
+def listing(actor=Depends(authorize)):
     with db() as c:
+        if 'demo' in actor['roles']:
+            return [dict(r) for r in c.execute('SELECT id,status,created,error,case_id FROM jobs WHERE actor=? ORDER BY created DESC LIMIT 100',(actor['id'],))]
         return [dict(r) for r in c.execute('SELECT id,status,created,error,case_id FROM jobs ORDER BY created DESC LIMIT 100')]
+
+
+def run_access(run_id,actor):
+    if 'demo' in actor['roles']:
+        with db() as c:row=c.execute('SELECT actor FROM jobs WHERE id=?',(run_id,)).fetchone()
+        if not row or row['actor']!=actor['id']:raise HTTPException(404,'Run not found')
 
 
 def state(run_id):
@@ -242,7 +261,8 @@ def state(run_id):
 
 
 @app.get('/api/runs/{run_id}',dependencies=[Depends(authorize)])
-def detail(run_id:str):
+def detail(run_id:str,actor=Depends(authorize)):
+    run_access(run_id,actor)
     return state(run_id)
 
 
@@ -277,7 +297,8 @@ def decision(run_id:str,body:Decision,actor=Depends(authorize)):
 
 @app.post('/api/runs/{run_id}/cancel')
 def cancel(run_id:str,actor=Depends(authorize)):
-    require(actor,'operator');current=state(run_id)
+    if 'demo' not in actor['roles']:require(actor,'operator')
+    run_access(run_id,actor);current=state(run_id)
     if current['status'] not in ['running','queued','awaiting_approval']:
         raise HTTPException(409,'Run is terminal')
     folder=RUNTIME/run_id;folder.mkdir(exist_ok=True)
@@ -289,7 +310,8 @@ def cancel(run_id:str,actor=Depends(authorize)):
 
 
 @app.get('/api/runs/{run_id}/audit',dependencies=[Depends(authorize)])
-def audit_history(run_id:str):
+def audit_history(run_id:str,actor=Depends(authorize)):
+    run_access(run_id,actor)
     state(run_id)
     with db() as c:
         return [dict(r) for r in c.execute('SELECT time,actor,action,evidence_digest FROM audit WHERE run_id=? ORDER BY id',(run_id,))]
@@ -319,7 +341,8 @@ def publish(run_id:str,actor=Depends(authorize)):
 
 
 @app.get('/api/runs/{run_id}/patch',dependencies=[Depends(authorize)])
-def patch(run_id:str):
+def patch(run_id:str,actor=Depends(authorize)):
+    run_access(run_id,actor)
     current=state(run_id)
     if current['status']!='completed':
         raise HTTPException(409,'Patch export requires approval')
@@ -375,7 +398,7 @@ from . import oauth
 
 @app.get('/auth/providers')
 def login_providers():
-    return {p:{'enabled':oauth.configured(p),'url':'/auth/'+p+'/start'} for p in ['github','google']}
+    return {p:{'enabled':oauth.configured(p),'url':'/auth/'+p+'/start','public_demo':p=='github' and os.getenv('RESCUE_PUBLIC_GITHUB_DEMO')=='1'} for p in ['github','google']}
 
 @app.get('/auth/{provider}/start')
 def oauth_start(provider:str,request:Request):
