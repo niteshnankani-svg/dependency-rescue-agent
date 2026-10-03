@@ -86,3 +86,7 @@ SQLite uses its online backup API; the default also copies workspaces and export
 ## Optional Docker model service
 
 On a separately provisioned model host, `docker compose -f compose.model.yaml up -d` starts pinned Ollama and pulls the configured code model into a persistent volume. The model port is loopback-only; use an authenticated private proxy or private network transport to reach it from the API. The overlay configuration is validated, but this model container has not been runtime-qualified on this low-memory Mac; earlier evaluations used native Ollama; final hosted evaluation details are in VALIDATION.md. Provision at least 16 GB RAM for model/worker operation or keep them on separate hosts. Model weights are downloaded at setup, never committed.
+
+### Model proxies and custom certificate authorities
+
+The default ignores ambient proxy and CA environment settings. For an operator-controlled proxy, opt in with `RESCUE_MODEL_TRUST_ENV=1` and explicitly supply the proxy/CA environment variables to the API process or container. Mount any CA bundle read-only and set its container path in `SSL_CERT_FILE`. Keep certificate verification enabled. This setting applies only to model traffic and model readiness checks; it does not change the executor transport.

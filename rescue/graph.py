@@ -11,7 +11,7 @@ import operator
 from langgraph.graph import StateGraph, START, END
 from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.types import interrupt
-from .guards import Repair, apply_repair, digest_files, protected_digest, source_files, source_preflight, normalize_bindings
+from .guards import Repair, apply_repair, digest_files, protected_digest, source_files, source_preflight, normalize_bindings, validate_edit_budget
 from .model import propose, ProposalError, ProviderError, dependency_context
 from .runner import run_tests
 from .security import SecurityViolation, screen_evidence, screen_output, check_new_capabilities
@@ -102,6 +102,7 @@ def upgrade(s):
     shutil.copytree(selected.templates/'upgraded',dest,symlinks=True)
     if selected.version(dest)!=selected.target_version:
         raise ValueError('Installed dependency must exactly match approved target')
+    source_preflight(dest,selected.source_globs)
     return {'protected':protected_digest(dest,selected.source_globs),'environment_digest':environment_digest(dest),'sources':{str(p.relative_to(dest)):p.read_text() for p in source_files(dest,selected.source_globs)},**event('upgrade',f'Applied pinned upgrade to {selected.dependency} {selected.target_version}')}
 
 
@@ -142,14 +143,16 @@ def diagnose(s):
 
 def apply(s):
     try:
-        changed=apply_repair(workspace(s),Repair.model_validate(s['repair']),case(s).source_globs)
+        changed=apply_repair(workspace(s),Repair.model_validate(s['repair']),case(s).source_globs,max_edits=case(s).max_edits)
         return event('apply','Validated exact-match source edits: '+', '.join(changed))
     except ValueError as exc:
         return {'status':'blocked','error':str(exc),**event('apply','Patch rejected by source-edit policy')}
 
 
 def normalize(s):
-    repair,notes=normalize_bindings(workspace(s),Repair.model_validate(s['repair']),case(s).source_globs)
+    proposal=Repair.model_validate(s['repair'])
+    validate_edit_budget(proposal,case(s).max_edits)
+    repair,notes=normalize_bindings(workspace(s),proposal,case(s).source_globs)
     return {'repair':repair.model_dump(),**event('normalize','; '.join(notes) if notes else 'Candidate needs no import binding normalization')}
 
 
@@ -177,6 +180,23 @@ def route_verification(s):
     return 'diagnose' if s['attempts']<case(s).max_attempts and s['verification']['integrity_ok'] else 'escalate'
 
 
+def unified_patch(old,new,fromfile,tofile):
+    # difflib preserves missing line endings but does not emit Git's EOF marker.
+    parts=[]
+    for line in difflib.unified_diff(old,new,fromfile=fromfile,tofile=tofile):
+        parts.append(line)
+        if not line.endswith('\n'):
+            parts.append('\n\\ No newline at end of file\n')
+    return ''.join(parts)
+
+
+def stable_verification(value):
+    # Keep all result/integrity fields, including nested checks; omit timing only.
+    if isinstance(value,dict):return {k:stable_verification(v) for k,v in value.items() if k not in {'seconds','duration_seconds'}}
+    if isinstance(value,list):return [stable_verification(v) for v in value]
+    return value
+
+
 def evidence(s):
     root=workspace(s)
     patch=''
@@ -189,10 +209,10 @@ def evidence(s):
         else:old=original.read_text().splitlines(keepends=True)
         new=(root/name).read_text().splitlines(keepends=True)
         repo_name=case(s).repository_path(name)
-        patch+=''.join(difflib.unified_diff(old,new,fromfile='a/'+repo_name if old else '/dev/null',tofile='b/'+repo_name))
+        patch+=unified_patch(old,new,fromfile='a/'+repo_name if old else '/dev/null',tofile='b/'+repo_name)
     if case(s).test_migration_files:
         patch+=(ROOT/'bootstrap'/case(s).id/'test-migration.patch').read_text()
-    bound={'patch':patch,'verification':s['verification'],'environment_digest':s['environment_digest'],'protected_digest':s['protected'],'source_digest':s['verified_sources'],'case':case(s).model_dump()}
+    bound={'patch':patch,'verification':stable_verification(s['verification']),'environment_digest':s['environment_digest'],'protected_digest':s['protected'],'source_digest':s['verified_sources'],'case':case(s).model_dump()}
     digest=hashlib.sha256(json.dumps(bound,sort_keys=True).encode()).hexdigest()
     return {'patch':patch,'evidence_digest':digest,'status':'awaiting_approval',**event('evidence','Diff, target version, test counts and integrity bound to an approval digest')}
 
@@ -218,6 +238,7 @@ def export(s):
     if any((root/name).read_text()!=content for name,content in expected.items()) or protected_digest(root,case(s).source_globs)!=s['protected'] or ('environment_digest' in s and environment_digest(root)!=s['environment_digest']):
         return {'status':'blocked','error':'Workspace changed since verification',**event('export','Stale evidence refused')}
     try:
+        validate_edit_budget(Repair.model_validate(s['repair']),selected.max_edits)
         screen_output(json.dumps(s['repair']))
         for edit in s['repair']['edits']:check_new_capabilities(edit['old'],edit['new'])
     except (SecurityViolation,ValueError):
@@ -239,20 +260,24 @@ def build_graph(checkpointer):
         def call(s):
             if cancelled(s):
                 raise RuntimeError('Run cancelled')
-            return fn(s)
+            try:
+                return fn(s)
+            except (ValueError,SecurityViolation):
+                # Exception text may contain source, credentials or validation input.
+                return {'status':'blocked','error':f'{fn.__name__}: input or security validation failed; inspect the prepared environment',**event(fn.__name__,'Validation rejected the run; no rejected input recorded')}
         return call
     for name,fn in [('intake',intake),('baseline',baseline),('upgrade',upgrade),('reproduce',reproduce),('investigate',investigate),('diagnose',diagnose),('normalize',normalize),('apply',apply),('verify',verify),('evidence',evidence),('approval',approval),('export',export),('escalate',escalate)]:
         graph.add_node(name,guarded(fn))
     graph.add_edge(START,'intake')
     for a,b in [('intake','baseline'),('baseline','upgrade'),('reproduce','investigate')]:
         graph.add_conditional_edges(a,lambda s,n=b: END if s.get('status')=='blocked' else n,[END,b])
-    graph.add_edge('upgrade','reproduce')
+    graph.add_conditional_edges('upgrade',lambda s: END if s.get('status')=='blocked' else 'reproduce',[END,'reproduce'])
     graph.add_conditional_edges('investigate',lambda s: END if s.get('status')=='blocked' else 'diagnose',[END,'diagnose'])
     graph.add_conditional_edges('diagnose',lambda s: END if s['status']=='blocked' else ('diagnose' if s['attempts']<case(s).max_attempts else 'escalate') if s['status']=='retry' else 'normalize',[END,'diagnose','escalate','normalize'])
-    graph.add_edge('normalize','apply')
+    graph.add_conditional_edges('normalize',lambda s: END if s.get('status')=='blocked' else 'apply',[END,'apply'])
     graph.add_conditional_edges('apply',lambda s: ('diagnose' if s['attempts']<case(s).max_attempts else 'escalate') if s.get('status')=='blocked' else 'verify',['diagnose','escalate','verify'])
     graph.add_conditional_edges('verify',route_verification,['evidence','diagnose','escalate',END])
-    graph.add_edge('evidence','approval')
+    graph.add_conditional_edges('evidence',lambda s: END if s.get('status')=='blocked' else 'approval',[END,'approval'])
     graph.add_conditional_edges('approval',lambda s:'export' if s['approved'] else END,['export',END])
     graph.add_edge('export',END)
     graph.add_edge('escalate',END)

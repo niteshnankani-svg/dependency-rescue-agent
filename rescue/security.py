@@ -1,4 +1,6 @@
 """Deterministic tripwires; capability restrictions remain the security boundary."""
+import base64
+import binascii
 import json
 import os
 import re
@@ -17,6 +19,10 @@ SECRET_PATTERNS = [
     r'(?i)(?:api[_-]?key|password|client[_-]?secret|access[_-]?token)\s*[=:]\s*[\"\'][^\"\'\s]{16,}[\"\']',
 ]
 INJECTION_PATTERNS = [
+    r'\bforget\s+(?:everything|all)\b.{0,50}\b(?:told|instructions|rules|prompts)\b',
+    r'\b(?:act as|pretend (?:to be|you are)|role[- ]?play as|you are now)\b.{0,60}\b(?:system|developer|administrator|unrestricted|unfiltered|jailbroken)\b',
+    r'\b(?:new|replacement|real)\s+(?:system|developer)\s+(?:message|prompt|instructions)\b',
+
     r'\b(?:ignore|disregard|override)\s+(?:(?:all|the|any)\s+)?(?:previous|prior|above|earlier|system|developer)\s+(?:instructions|prompts|rules)',
     r'<\|(?:im_start|im_end|system|assistant|endoftext)\|>|\[/?INST\]|</?(?:system|developer)>',
     r'\b(?:reveal|print|send|exfiltrate|upload)\b.{0,80}\b(?:api keys?|secrets?|credentials?|system prompt|environment variables)\b',
@@ -45,12 +51,36 @@ def redact_text(text):
     return text
 
 
+def evidence_variants(text):
+    """Bounded heuristic decoding, not an exhaustive encoding/semantic analysis."""
+    clean=normalized(text)
+    variants=[clean,clean.translate(str.maketrans('0134578','oieastb'))]
+    remaining=16_384
+    frontier=[clean]
+    for _ in range(2):
+        next_layer=[]
+        for current in frontier:
+            for match in list(re.finditer(r'(?<![A-Za-z0-9+/])[A-Za-z0-9+/]{24,4096}={0,2}(?![A-Za-z0-9+/=])',current))[:16]:
+                token=match[0]
+                if len(token)>remaining:continue
+                remaining-=len(token)
+                try:decoded=base64.b64decode(token,validate=True).decode('utf-8')
+                except (ValueError,UnicodeDecodeError,binascii.Error):continue
+                decoded=normalized(decoded)
+                if not decoded.isprintable() and any(c not in '\n\r\t' and not c.isprintable() for c in decoded):continue
+                variants.extend([decoded,decoded.translate(str.maketrans('0134578','oieastb'))])
+                next_layer.append(decoded)
+        frontier=next_layer
+    return variants
+
+
 def screen_evidence(value, label='model evidence'):
     text=json.dumps(value,ensure_ascii=False) if not isinstance(value,str) else value
     if len(text)>100_000:raise SecurityViolation('Security policy: evidence budget exceeded')
     if secret_present(text):raise SecurityViolation('Security policy: possible credential in '+label)
-    clean=normalized(text)
-    if any(re.search(pattern,clean,re.I|re.S) for pattern in INJECTION_PATTERNS):
+    variants=evidence_variants(text)
+    if any(secret_present(variant) for variant in variants):raise SecurityViolation('Security policy: possible encoded credential in '+label)
+    if any(re.search(pattern,variant,re.I|re.S) for variant in variants for pattern in INJECTION_PATTERNS):
         raise SecurityViolation('Security policy: suspected prompt injection in '+label)
     if any(c in text for c in '\u202a\u202b\u202c\u202d\u202e\u2066\u2067\u2068\u2069'):
         raise SecurityViolation('Security policy: concealed direction controls in '+label)
@@ -72,6 +102,11 @@ def canonical_code(text):
 
 def check_new_capabilities(old,new):
     old,new=canonical_code(old),canonical_code(new)
+    # Fail closed on edited dynamic loaders. We cannot prove variable contents.
+    dynamic=r"\b(?:require|import)\s*\((?!\s*['\"])"
+    aliases=r"\brequire\b(?!\s*\()"
+    if (re.search(dynamic,new) and new!=old) or len(re.findall(aliases,new))>len(re.findall(aliases,old)):
+        raise ValueError('Repair introduces or changes a dynamic module loader')
     imports=r"(?:require\s*\(|from\s*|import\s*\()\s*['\"]([^'\"]+)['\"]"
     if set(re.findall(imports,new))-set(re.findall(imports,old)):
         raise ValueError('Repair introduces a new module dependency')

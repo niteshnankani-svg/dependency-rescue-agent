@@ -36,7 +36,7 @@ def test_stale_workspace_cannot_be_exported(tmp_path,monkeypatch):
     root=tmp_path/'case/workspace'
     (root/'src').mkdir(parents=True)
     (root/'src/main.js').write_text('tampered();')
-    state={'run_id':'case','sources':{'src/main.js':'old();'},'repair':{'edits':[{'path':'src/main.js','old':'old();','new':'new();'}]},'protected':'irrelevant'}
+    state={'run_id':'case','sources':{'src/main.js':'old();'},'repair':{'diagnosis':'Verified source change','edits':[{'path':'src/main.js','old':'old();','new':'new();'}]},'protected':'irrelevant'}
     result=g.export(state)
     assert result['status']=='blocked'
     assert not (tmp_path/'case/repair.patch').exists()
@@ -47,7 +47,7 @@ def test_verified_patch_export_is_readable(tmp_path,monkeypatch):
     root=tmp_path/'case/workspace'
     (root/'src').mkdir(parents=True)
     (root/'src/main.js').write_text('new();')
-    state={'run_id':'case','sources':{'src/main.js':'old();'},'repair':{'edits':[{'path':'src/main.js','old':'old();','new':'new();'}]},'protected':g.protected_digest(root),'patch':'reviewed patch'}
+    state={'run_id':'case','sources':{'src/main.js':'old();'},'repair':{'diagnosis':'Verified source change','edits':[{'path':'src/main.js','old':'old();','new':'new();'}]},'protected':g.protected_digest(root),'patch':'reviewed patch'}
     import hashlib
     state.update(environment_digest=g.environment_digest(root),verified_sources=g.digest_files(root,g.source_files(root)),case_digest=hashlib.sha256(g.case(state).model_dump_json().encode()).hexdigest())
     assert g.export(state)['status']=='completed'

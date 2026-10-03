@@ -68,13 +68,16 @@ def worker():
             try:
                 existing=graph.get_state(config)
                 graph.invoke(None if existing.values else {'run_id':row['id'],'case_id':row['case_id'],'events':[]},config)
-                status=graph.get_state(config).values.get('status','blocked')
+                result=graph.get_state(config).values
+                status=result.get('status','blocked')
+                error=result.get('error') if status in ['blocked','cancelled'] else None
                 with db() as c:
-                    c.execute("UPDATE jobs SET status=? WHERE id=? AND status!='cancelled'",(status,row['id']))
+                    c.execute("UPDATE jobs SET status=?,error=? WHERE id=? AND status!='cancelled'",(status,error,row['id']))
             except Exception as exc:
                 with db() as c:
                     status='cancelled' if (RUNTIME/row['id']/'cancel').exists() else 'blocked'
-                    c.execute('UPDATE jobs SET status=?,error=? WHERE id=?',(status,type(exc).__name__,row['id']))
+                    error='Cancelled by operator' if status=='cancelled' else 'Execution failed ('+type(exc).__name__+'); inspect the prepared environment'
+                    c.execute('UPDATE jobs SET status=?,error=? WHERE id=?',(status,error,row['id']))
             finally:
                 heartbeat_stop.set();heartbeat_thread.join(timeout=1)
     finally:
@@ -223,16 +226,16 @@ def state(run_id):
         snapshot=graph.get_state({'configurable':{'thread_id':run_id}})
         if not snapshot.values:
             with db() as c:
-                row=c.execute('SELECT status FROM jobs WHERE id=?',(run_id,)).fetchone()
+                row=c.execute('SELECT status,error FROM jobs WHERE id=?',(run_id,)).fetchone()
                 if row:
-                    return {'run_id':run_id,'status':row['status'],'events':[]}
+                    return {'run_id':run_id,'status':row['status'],'error':row['error'],'events':[]}
             raise HTTPException(404,'Run not found')
         values=dict(snapshot.values)
         values.pop('sources',None)
         with db() as c:
             job=c.execute('SELECT status,error FROM jobs WHERE id=?',(run_id,)).fetchone()
             if job and job['status'] in ['blocked','cancelled'] and job['error']:
-                values.update(status=job['status'],error='Worker stopped: '+job['error'])
+                values.update(status=job['status'],error=job['error'])
         return values
     finally:
         conn.close()

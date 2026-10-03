@@ -10,7 +10,7 @@ class Edit(BaseModel):
     model_config = ConfigDict(extra='forbid')
     path: str = Field(max_length=200)
     old: str = Field(min_length=1, max_length=8000)
-    new: str = Field(min_length=1, max_length=8000)
+    new: str = Field(max_length=8000)
 
 
 class Repair(BaseModel):
@@ -72,7 +72,7 @@ def normalize_bindings(root,repair,globs=None):
         replacement=edit.new
         esm=esm_new.fullmatch(edit.new)
         if old and esm and old[5]==esm[3] and edit.path in allowed:
-            replacement=f'{old[1]}{old[2]} {{ {esm[1]} }} = require({old[4]}{old[5]}{old[4]})'
+            replacement=f'{old[1]}{old[2]} {{ {esm[1]} }} = require({old[4]}{old[5]}{old[4]})'+(';' if edit.new.rstrip().endswith(';') or edit.old.rstrip().endswith(';') else '')
             edit=edit.model_copy(update={'new':replacement})
             new=import_new.fullmatch(replacement)
             notes.append(f'{edit.path}: preserved CommonJS module format')
@@ -89,12 +89,18 @@ def normalize_bindings(root,repair,globs=None):
                 if valid and re.search(r'\b'+re.escape(old[3])+r'\b',remainder) and not re.search(r'\b'+re.escape(new[3])+r'\b',remainder):
                     replacement=edit.new[:new.start(3)]+new[3]+': '+old[3]+edit.new[new.end(3):]
                     notes.append(f'{edit.path}: preserved local binding {old[3]} for named export {new[3]}')
-        if edit.old.endswith('\n') and not replacement.endswith('\n'):replacement+='\n'
+        if replacement and edit.old.endswith('\n') and not replacement.endswith('\n'):replacement+='\n'
         edits.append(edit.model_copy(update={'new':replacement}))
     return repair.model_copy(update={'edits':edits}),notes
 
 
-def apply_repair(root: Path, repair: Repair, globs=None):
+def validate_edit_budget(repair, max_edits):
+    if type(max_edits) is not int or not 1<=max_edits<=5 or len(repair.edits)>max_edits:
+        raise ValueError('Edit budget exceeded')
+
+
+def apply_repair(root: Path, repair: Repair, globs=None, *, max_edits=5):
+    validate_edit_budget(repair,max_edits)
     root=root.resolve()
     allowed={str(p.relative_to(root)) for p in source_files(root,globs)}
     updates={}

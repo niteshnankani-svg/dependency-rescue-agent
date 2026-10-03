@@ -24,3 +24,8 @@ def settings():
     if os.getenv('RESCUE_ENV')=='production' and provider=='chat-completions' and parsed.scheme!='https':
         raise ValueError('Production compatible providers require HTTPS')
     return provider,url,os.getenv('RESCUE_MODEL') or model,key
+
+
+def model_trust_env():
+    """Operator opt-in for model transport proxies and custom CA certificates."""
+    return os.getenv('RESCUE_MODEL_TRUST_ENV')=='1'
