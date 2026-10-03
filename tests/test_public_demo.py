@@ -20,7 +20,7 @@ def test_demo_signup_opt_in_and_explicit_revocation(monkeypatch):
 def demo(tmp_path,monkeypatch):
     monkeypatch.setattr(api,'RUNTIME',tmp_path)
     monkeypatch.setattr(api,'ensure_execution_ready',lambda case:None)
-    actor={'id':'github:123','roles':['viewer','demo'],'provider':'github'}
+    actor={'id':'github:123','name':'niteshnankani-svg','roles':['viewer','demo'],'provider':'github'}
     api.app.dependency_overrides[api.authorize]=lambda:actor
     yield TestClient(api.app),actor
     api.app.dependency_overrides.clear()
@@ -37,8 +37,20 @@ def test_demo_is_owner_scoped_and_cannot_escalate(demo,monkeypatch):
     assert client.post('/api/runs/'+'a'*32+'/cancel',json={}).status_code==404
     assert client.post('/api/runs/'+'a'*32+'/decision',json={'approve':True,'evidence_digest':'a'*64}).status_code==403
     assert client.post('/api/runs/'+'a'*32+'/publish',json={}).status_code==403
-    assert client.get('/api/github/repositories').status_code==403
     assert [c['id'] for c in client.get('/api/cases').json()]==['hexo-uglify-terser']
+
+
+def test_demo_repository_list_is_limited_to_authenticated_public_owner(demo,monkeypatch):
+    client,actor=demo;seen=[]
+    class PublicGitHub:
+        def __init__(self,public_owner):seen.append(public_owner);self.public_owner=public_owner;self.token=None
+        def repositories(self):return [{'repository':f'{self.public_owner}/public-demo','private':False}]
+        def close(self):pass
+    monkeypatch.setattr(api,'GitHub',PublicGitHub)
+    response=client.get('/api/github/repositories')
+    assert response.status_code==200
+    assert response.json()=={'connected':True,'public_owner':'niteshnankani-svg','repositories':[{'repository':'niteshnankani-svg/public-demo','private':False}],'limit':100}
+    assert seen==['niteshnankani-svg']
 
 
 def test_demo_has_account_limit_and_idempotency(demo):

@@ -1,6 +1,7 @@
 """Deterministic tripwires; capability restrictions remain the security boundary."""
 import base64
 import binascii
+from collections import Counter
 import json
 import os
 import re
@@ -27,6 +28,14 @@ INJECTION_PATTERNS = [
     r'<\|(?:im_start|im_end|system|assistant|endoftext)\|>|\[/?INST\]|</?(?:system|developer)>',
     r'\b(?:reveal|print|send|exfiltrate|upload)\b.{0,80}\b(?:api keys?|secrets?|credentials?|system prompt|environment variables)\b',
     r'\b(?:disable|bypass|skip)\s+(?:all\s+)?(?:security|guardrails?|approval|verification|tests)\b',
+    r'\b(?:ignore|disregard|override|forget|replace|supersede|stop following)\b.{0,100}\b(?:all\s+)?(?:previous|prior|above|earlier|system|developer|safety|security)?\s*(?:instructions?|prompts?|rules?|polic(?:y|ies)|requirements?|constraints?|guardrails?|safeguards?|directives?)\b',
+    r'\b(?:obsolete|outdated|superseded|replaced|no longer applies|does not apply)\b.{0,80}\b(?:system|developer|safety|security)?\s*(?:instructions?|prompts?|rules?|polic(?:y|ies)|requirements?|constraints?|guardrails?|safeguards?)\b',
+    r'\b(?:do not|don\'t|never)\s+(?:follow|use|obey|enforce)\b.{0,60}\b(?:policy|guardrails?|verification|tests?|approval|safety|security|instructions?)\b',
+    r'\b(?:for the rest of this session|from now on|from this point on|starting now|these are the real instructions)\b.{0,120}\b(?:output|print|return|disclose|reveal|dump|ignore|disregard|stop following|mark|declare)\b.{0,100}\b(?:hidden system|developer prompt|secrets?|credentials?|api keys?|environment variables?|tests?|approval|verified|approved)\b',
+    r'\b(?:assume|adopt|switch to|enter|take on|pretend to be|role[- ]?play as)\b.{0,60}\b(?:root|admin(?:istrator)?|system|developer|unrestricted|unfiltered|jailbroken)\b.{0,60}\b(?:persona|role|mode|identity)?\b',
+    r'\b(?:disclose|dump|return|output|print|expose)\b[^.!?\n]{0,40}\b(?:hidden system|developer prompt|environment variables?|api keys?|secrets?|credentials?|access tokens?)\b',
+    r'\b(?:read|retrieve|extract|copy|use|take)\b.{0,80}\b(?:secret|credential|api key|environment variable|access token)\b.{0,100}\b(?:request|http|bearer|external|url|endpoint|post|upload|send|transmit)\b',
+    r'\b(?:mark|declare|consider)\b.{0,80}\b(?:patch|repair|change|run|tests?)\b.{0,50}\b(?:approved|verified|safe|passed)\b',
 ]
 
 
@@ -54,7 +63,8 @@ def redact_text(text):
 def evidence_variants(text):
     """Bounded heuristic decoding, not an exhaustive encoding/semantic analysis."""
     clean=normalized(text)
-    variants=[clean,clean.translate(str.maketrans('0134578','oieastb'))]
+    leet=clean.translate(str.maketrans({'0':'o','1':'i','2':'z','3':'e','4':'a','5':'s','6':'g','7':'t','8':'b','9':'g'}))
+    variants=[clean,leet]
     remaining=16_384
     frontier=[clean]
     for _ in range(2):
@@ -68,7 +78,7 @@ def evidence_variants(text):
                 except (ValueError,UnicodeDecodeError,binascii.Error):continue
                 decoded=normalized(decoded)
                 if not decoded.isprintable() and any(c not in '\n\r\t' and not c.isprintable() for c in decoded):continue
-                variants.extend([decoded,decoded.translate(str.maketrans('0134578','oieastb'))])
+                variants.extend([decoded,decoded.translate(str.maketrans({'0':'o','1':'i','2':'z','3':'e','4':'a','5':'s','6':'g','7':'t','8':'b','9':'g'}))])
                 next_layer.append(decoded)
         frontier=next_layer
     return variants
@@ -117,6 +127,8 @@ def check_new_capabilities(old,new):
         r'\b(?:exec|compile|__import__)\s*\(',
         r'\b(?:subprocess|socket|urllib|requests)\s*\.',
         r'\bos\s*\.\s*(?:system|popen|environ|putenv|remove|unlink|exec\w*|spawn\w*)\b',
+        r'\bos\s*\.\s*(?:open|getenv|chmod|chown|listdir|scandir|walk)\b',
+        r'\b\w+\s*\.\s*(?:read_text|write_text|read_bytes|write_bytes|unlink|rename|replace|mkdir|rmdir)\s*\(',
         r'\b(?:sys\.exit|shutil\.rmtree|pickle\.loads)\b',
         r'\b(?:axios|superagent|undici)\b',
         r'\b(?:child_process|worker_threads|node:vm)\b',
@@ -130,6 +142,7 @@ def check_new_capabilities(old,new):
         r'https?://[^\s\"\'`]+',
     ]
     for pattern in patterns:
-        before=set(re.findall(pattern,old,re.I))
-        if any(match not in before for match in re.findall(pattern,new,re.I)):
+        before=Counter(re.findall(pattern,old,re.I))
+        after=Counter(re.findall(pattern,new,re.I))
+        if any(count>before[match] for match,count in after.items()):
             raise ValueError('Repair introduces a forbidden capability or destination')
