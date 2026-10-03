@@ -12,7 +12,7 @@
         rewrite * /
         reverse_proxy api:8093
     }
-    @backend path /api/* /auth/* /healthz /readyz /docs /openapi.json
+    @backend path /api/* /auth/* /static/* /healthz /readyz /docs /openapi.json
     handle @backend {
         reverse_proxy api:8093
     }

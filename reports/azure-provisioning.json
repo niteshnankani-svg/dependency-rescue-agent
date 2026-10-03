@@ -18,7 +18,19 @@
       "tests": 6
     }
   },
-  "credentials_uploaded": false,
-  "public_app_verified": false,
-  "cloud_agent_repair_verified": false
+  "credentials_uploaded": true,
+  "public_app_verified": true,
+  "cloud_agent_repair_verified": true,
+  "hostname": "dependency-rescue-7943-web.centralindia.cloudapp.azure.com",
+  "run_id": "24b919ac0c1f4527a4aaefa79ab42078",
+  "repair_status": "awaiting_approval",
+  "post_repair": {
+    "passes": 6,
+    "tests": 6,
+    "integrity_ok": true
+  },
+  "restart_persistence_verified": true,
+  "unauthenticated_api_status": 401,
+  "reviewer_submit_status": 403,
+  "workspace_assets_verified": true
 }

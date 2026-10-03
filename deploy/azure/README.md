@@ -1,6 +1,6 @@
 # Azure deployment
 
-Status: two dedicated VMs provisioned in Central India; application images built. Model credentials and service-token upload await explicit authorization, so public app startup and end-to-end repair verification are pending.
+Status: frontend, HTTPS gateway, API and isolated worker are live in Central India. The existing Gemini API key was uploaded to the API host with explicit authorization. A real repair restored 6/6 tests and is awaiting human approval; its history survived an API restart. See `reports/azure-provisioning.json` for the acceptance results.
 
 Use two dedicated Linux VMs in one Azure virtual network:
 
@@ -34,6 +34,8 @@ Follow DEPLOYMENT.md for the separate executor. Prepare immutable snapshots and 
 
 Automatic preparation of new GitHub repositories currently supports only the local Docker workflow. Cloud deployment does not remove this restriction. Initially only explicitly prepared and synchronized cases can run; remote preparation needs additional implementation and validation.
 
+Create the disposable worker directory with ownership matching the executor controller. The current executor image runs as root with all capabilities dropped, so a directory owned by the deployment user is not writable even when mode is 755. On the dedicated worker use `sudo install -d -o root -g root -m 750 /srv/rescue/executions`. Repository tests still execute separately as UID 1000 without network or capabilities.
+
 ## Acceptance checks
 
 - HTTPS landing page, `/workspace`, and provider configuration work.
@@ -49,6 +51,6 @@ Resource group: `dependency-rescue`; location: `centralindia`; VM size: `Standar
 
 Azure reported the subscription's free-trial spending limit as enabled. Retail compute price retrieved for this region/size: $0.0448 per VM-hour, about $65.41 for two VMs across 730 hours. Disks, two public IPs, outbound transfer, taxes, and model-provider usage are additional. Credit balance/expiry must be checked in Azure billing.
 
-Only the public, pinned `hexo-uglify-terser` development fixture has been prepared on the worker for initial validation: baseline 6/6; upgraded 3/6. No new model repair has been executed on Azure yet.
+Only the public, pinned `hexo-uglify-terser` development fixture is prepared on the worker: baseline 6/6; upgraded 3/6; Gemini repair 6/6 with integrity checks passing. The review is deliberately pending; no patch has been approved or merged automatically.
 
-Deployment SSH keys and private environment files are in ignored `runtime/azure/` with restrictive permissions. They are excluded from application archives and Git. The API host needs the existing Gemini key; the worker receives only its executor token. OAuth remains disabled until hosted callback URLs are registered.
+Deployment SSH keys and private environment files are in ignored `runtime/azure/` with restrictive permissions. They are excluded from application archives and Git. The API host has the existing Gemini key; the worker has only its executor token. OAuth remains disabled until hosted callback URLs are registered. Use the private organization operator token to sign in at `https://dependency-rescue-7943-web.centralindia.cloudapp.azure.com/workspace`; use the separate reviewer token to review the verified patch. Do not share either token in a public demo.
